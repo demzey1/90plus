@@ -1,5 +1,5 @@
 export const NINETY_PLUS_ADDRESS =
-  "0x90Fe3B19850E95258414Cb553403c515fd7b63EE" as const;
+  "0x17B09FC73972d712B6693CB903E5D8e13854c25f" as const;
 
 export type PickChoice = 0 | 1 | 2;
 
@@ -41,8 +41,6 @@ export const ninetyPlusAbi = [
     inputs: [
       { name: "matchId", type: "uint256" },
       { name: "pick", type: "uint8" },
-      { name: "predictedHomeScore", type: "uint8" },
-      { name: "predictedAwayScore", type: "uint8" },
     ],
     outputs: [],
   },
@@ -57,13 +55,12 @@ export const ninetyPlusAbi = [
     outputs: [
       { name: "submitted", type: "bool" },
       { name: "pick", type: "uint8" },
-      { name: "predictedHomeScore", type: "uint8" },
-      { name: "predictedAwayScore", type: "uint8" },
       { name: "submittedAt", type: "uint256" },
       { name: "points", type: "uint256" },
       { name: "tokenId", type: "uint256" },
     ],
   },
+
   {
     type: "function",
     name: "totalPoints",
@@ -92,7 +89,17 @@ export const ninetyPlusAbi = [
       { name: "homeScore", type: "uint8" },
       { name: "awayScore", type: "uint8" },
       { name: "aiPrediction", type: "string" },
+      { name: "isHidden", type: "bool" },
     ],
+  },
+  {
+    type: "function",
+    name: "hideMatch",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "uint256" },
+    ],
+    outputs: [],
   },
 ] as const;
 
@@ -250,8 +257,6 @@ export const pickLabels = ["HOME", "DRAW", "AWAY"] as const;
 
 export type ContractPrediction = readonly [
   boolean,
-  number,
-  number,
   number,
   bigint,
   bigint,

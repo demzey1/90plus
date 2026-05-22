@@ -41,11 +41,9 @@ export function TicketGallery() {
   if (!isConnected) {
     return (
       <section className="panel p-8 text-center">
-        <Wallet className="mx-auto mb-4" color="#00FF85" size={42} />
-        <h2 className="font-heading text-5xl uppercase">Connect Wallet</h2>
-        <p className="mx-auto mt-3 max-w-xl muted">
-          Your minted prediction tickets appear here once your wallet is connected on X Layer.
-        </p>
+        <Wallet className="mx-auto mb-4" color="#00b36b" size={42} />
+        <h2 className="font-heading text-3xl md:text-4xl uppercase">Connect Wallet</h2>
+        <p className="mx-auto mt-3 max-w-xl muted">Your minted prediction tickets appear here once your wallet is connected on X Layer.</p>
         <div className="mt-6 flex justify-center">
           <WalletButton />
         </div>
@@ -72,17 +70,11 @@ export function TicketGallery() {
   const tickets =
     data
       ?.map((result, index) => {
-        const prediction =
-          result.status === "success" ? (result.result as unknown as ContractPrediction) : undefined;
+        const prediction = result.status === "success" ? (result.result as unknown as ContractPrediction) : undefined;
 
-        if (!prediction?.[0]) {
-          return null;
-        }
+        if (!prediction?.[0]) return null;
 
-        return {
-          match: fixtures[index],
-          prediction,
-        };
+        return { match: fixtures[index], prediction };
       })
       .filter(Boolean) ?? [];
 
@@ -90,10 +82,8 @@ export function TicketGallery() {
     return (
       <section className="panel p-8 text-center">
         <Ticket className="mx-auto mb-4" color="#FFD700" size={42} />
-        <h2 className="font-heading text-5xl uppercase">No Tickets Yet</h2>
-        <p className="mx-auto mt-3 max-w-xl muted">
-          Mint a match prediction ticket and it will land in this gallery.
-        </p>
+        <h2 className="font-heading text-3xl md:text-4xl uppercase">No Tickets Yet</h2>
+        <p className="mx-auto mt-3 max-w-xl muted">Mint a match prediction ticket and it will land in this gallery.</p>
       </section>
     );
   }
@@ -101,59 +91,62 @@ export function TicketGallery() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {tickets.map((ticket) => {
-        if (!ticket) {
-          return null;
-        }
-
+        if (!ticket) return null;
         const { match, prediction } = ticket;
-        const pick = pickLabels[prediction[1] as 0 | 1 | 2];
+        const pickIndex = Number(prediction[1]);
+        const pickLabel = pickLabels[pickIndex] ?? "Unknown";
 
         return (
-          <article key={match.id} className={`ticket-card relative overflow-hidden p-5 ticket-pick-${pick.toLowerCase()}`}>
+          <article key={match.id} className={`ticket-card relative overflow-hidden p-5 ticket-pick-${pickLabel.toLowerCase()}`}>
             <div className="relative z-10 flex items-start justify-between gap-4">
               <div>
-                <p className="eyebrow">Ticket #{prediction[6].toString()}</p>
+                <p className="eyebrow">Ticket #{prediction[4].toString()}</p>
+
                 <div className="mt-4 flex items-center gap-4">
-                  <img className="country-flag country-flag-large" src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt={match.home} />
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.22em] text-white/45">Home</p>
-                    <h2 className="font-heading text-4xl uppercase leading-none">{match.home}</h2>
+                  <div className={`flex items-center gap-3 ${pickIndex === 0 ? "ticket-pick-home" : "muted"}`}>
+                    <img className="country-flag country-flag-large" src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt={match.home} />
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-white/45">Home</p>
+                      <h3 className="font-heading text-2xl uppercase leading-none">{match.home}</h3>
+                    </div>
                   </div>
-                  <span className="match-vs-pill">VS</span>
-                  <div className="text-right">
-                    <p className="text-xs uppercase tracking-[0.22em] text-white/45">Away</p>
-                    <h2 className="font-heading text-4xl uppercase leading-none">{match.away}</h2>
+
+                  <div className="flex-1 text-center">
+                    <span className="match-vs-pill">{pickLabel}</span>
                   </div>
-                  <img className="country-flag country-flag-large" src={`https://flagcdn.com/w80/${match.awayFlag}.png`} alt={match.away} />
+
+                  <div className={`flex items-center gap-3 ${pickIndex === 2 ? "ticket-pick-away" : "muted"}`}>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.22em] text-white/45">Away</p>
+                      <h3 className="font-heading text-2xl uppercase leading-none">{match.away}</h3>
+                    </div>
+                    <img className="country-flag country-flag-large" src={`https://flagcdn.com/w80/${match.awayFlag}.png`} alt={match.away} />
+                  </div>
                 </div>
+
                 <div className="mt-4 space-y-2 text-sm text-white/64">
                   <p className="flex items-center gap-2">
                     <CalendarClock size={14} color="#FFD700" />
                     {formatKickoff(match.kickoff)}
                   </p>
                   <p className="flex items-center gap-2">
-                    <MapPin size={14} color="#00FF85" />
+                    <MapPin size={14} color="#00b36b" />
                     {match.stadium} · {match.city}
                   </p>
                 </div>
               </div>
+
               <Trophy color="#FFD700" />
             </div>
 
-            <div className="relative z-10 mt-8 grid grid-cols-3 gap-2 text-center font-score">
+            <div className="relative z-10 mt-6 grid grid-cols-2 gap-3 items-center">
               <div className="rounded-lg border border-white/10 bg-white/5 p-3">
                 <p className="text-xs text-white/45">PICK</p>
-                <p className="text-pitch">{pick}</p>
+                <p className="font-heading text-xl uppercase">{pickLabel}</p>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                <p className="text-xs text-white/45">SCORE</p>
-                <p className="text-gold">
-                  {prediction[2]}-{prediction[3]}
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="rounded-lg border border-white/10 bg-white/5 p-3 text-right">
                 <p className="text-xs text-white/45">PTS</p>
-                <p>{prediction[5].toString()}</p>
+                <p className="font-score">{prediction[5].toString()}</p>
               </div>
             </div>
 

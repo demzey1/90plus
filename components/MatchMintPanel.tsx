@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, Share2, ShieldCheck, Ticket } from "lucide-react";
+import { Share2, ShieldCheck, Ticket } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { zeroAddress } from "viem";
 import {
@@ -22,39 +22,12 @@ import {
 } from "@/lib/contract";
 import { xLayerTestnet } from "@/lib/wagmi";
 
-const clampScore = (value: number) => Math.max(0, Math.min(12, value));
-
-function ScoreStepper({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (next: number) => void;
-}) {
-  return (
-    <div>
-      <p className="mb-2 text-xs font-black uppercase text-white/50">{label}</p>
-      <div className="score-stepper">
-        <button type="button" aria-label={`Lower ${label}`} onClick={() => onChange(clampScore(value - 1))}>
-          <Minus size={16} />
-        </button>
-        <span>{value}</span>
-        <button type="button" aria-label={`Raise ${label}`} onClick={() => onChange(clampScore(value + 1))}>
-          <Plus size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 const confettiPieces = Array.from({ length: 24 }, (_, index) => ({
   left: `${(index * 17) % 100}%`,
   delay: `${(index % 8) * 90}ms`,
   duration: `${1400 + (index % 5) * 180}ms`,
   size: `${8 + (index % 4) * 3}px`,
-  hue: index % 3 === 0 ? "#00ff85" : index % 3 === 1 ? "#ffd700" : "#f6fff9",
+  hue: index % 3 === 0 ? "#00b36b" : index % 3 === 1 ? "#ffd700" : "#f6fff9",
 }));
 
 function OutcomeButton({
@@ -85,8 +58,6 @@ function OutcomeButton({
 
 export function MatchMintPanel({ match }: { match: Fixture }) {
   const [selectedPick, setSelectedPick] = useState<PickChoice>(0);
-  const [homeScore, setHomeScore] = useState(2);
-  const [awayScore, setAwayScore] = useState(1);
   const [hash, setHash] = useState<`0x${string}` | undefined>();
   const [celebrate, setCelebrate] = useState(false);
   const [submittedPick, setSubmittedPick] = useState<PickChoice | null>(null);
@@ -126,41 +97,33 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
     if (isConfirmed) {
       setCelebrate(true);
       void refetch();
+
+      try {
+        localStorage.setItem("ticketMinted", String(Date.now()));
+        window.dispatchEvent(
+          new CustomEvent("ticket:minted", { detail: { matchId: match.id, tokenId: prediction?.[4]?.toString() } }),
+        );
+      } catch (e) {
+        // ignore
+      }
     }
-  }, [isConfirmed, refetch]);
+  }, [isConfirmed, refetch, match.id, prediction]);
 
   useEffect(() => {
-    if (!celebrate) {
-      return undefined;
-    }
-
+    if (!celebrate) return undefined;
     const timer = window.setTimeout(() => setCelebrate(false), 3600);
     return () => window.clearTimeout(timer);
   }, [celebrate]);
 
-  const explorerUrl = useMemo(() => {
-    if (!hash) {
-      return null;
-    }
-
-    return `${xLayerTestnet.blockExplorers.default.url}/tx/${hash}`;
-  }, [hash]);
+  const explorerUrl = useMemo(() => (hash ? `${xLayerTestnet.blockExplorers.default.url}/tx/${hash}` : null), [hash]);
 
   const shareUrl = useMemo(() => {
-    if (typeof window === "undefined") {
-      return "";
-    }
-
+    if (typeof window === "undefined") return "";
     const status = prediction?.[0] ? "locked" : "submitted";
-    const token = prediction?.[6] ? `Token #${prediction[6].toString()}` : "Ticket";
-    const tweet =
-      `I just ${status} my ${token} for ${match.home} vs ${match.away} on 90+ in X Layer testnet. ` +
-      `Pick: ${pickLabels[mintedPick]}. Score call: ${homeScore}-${awayScore}.`;
-
-    return `https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}&url=${encodeURIComponent(
-      window.location.href,
-    )}`;
-  }, [homeScore, match.away, match.home, mintedPick, prediction]);
+    const token = prediction?.[4] ? `Token #${prediction[4].toString()}` : "Ticket";
+    const tweet = `I just ${status} my ${token} for ${match.home} vs ${match.away} on 90+. Pick: ${pickLabels[mintedPick]}.`;
+    return `https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}&url=${encodeURIComponent(window.location.href)}`;
+  }, [match.away, match.home, mintedPick, prediction]);
 
   async function handleSubmit(pick: PickChoice) {
     setLocalError(null);
@@ -177,11 +140,12 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
         await switchChainAsync({ chainId: xLayerTestnet.id });
       }
 
+      // No score prediction UX: pass zeros for score args
       const txHash = await writeContractAsync({
         address: NINETY_PLUS_ADDRESS,
         abi: ninetyPlusAbi,
         functionName: "submitPrediction",
-        args: [BigInt(match.id), pick, homeScore, awayScore],
+        args: [BigInt(match.id), pick],
         chainId: xLayerTestnet.id,
       });
 
@@ -199,16 +163,14 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
             <span
               key={`${piece.left}-${index}`}
               className="confetti-piece"
-              style={
-                {
-                  left: piece.left,
-                  animationDelay: piece.delay,
-                  animationDuration: piece.duration,
-                  background: piece.hue,
-                  width: piece.size,
-                  height: `calc(${piece.size} * 0.45)`,
-                } as CSSProperties
-              }
+              style={{
+                left: piece.left,
+                animationDelay: piece.delay,
+                animationDuration: piece.duration,
+                background: piece.hue,
+                width: piece.size,
+                height: `calc(${piece.size} * 0.45)`,
+              } as CSSProperties}
             />
           ))}
         </div>
@@ -217,8 +179,8 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
       <div className="relative z-10 flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="eyebrow">NFT Prediction Ticket</span>
-            <h2 className="mt-3 font-heading text-5xl uppercase leading-none md:text-6xl">Lock Your Call</h2>
+            <span className="eyebrow text-sm text-white/70">NFT Prediction Ticket</span>
+            <h2 className="mt-3 font-heading text-2xl md:text-3xl uppercase leading-none">Lock Your Call</h2>
           </div>
           <Ticket size={34} color="#FFD700" />
         </div>
@@ -236,68 +198,43 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
           ))}
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <ScoreStepper label={`${match.home} score`} value={homeScore} onChange={setHomeScore} />
-          <ScoreStepper label={`${match.away} score`} value={awayScore} onChange={setAwayScore} />
-        </div>
-
-        <div className="grid gap-3 border-y border-white/10 py-4 md:grid-cols-3">
+        <div className="grid gap-3 border-t border-white/10 pt-4">
           <div>
             <p className="text-xs font-black uppercase text-white/45">Pick</p>
-            <p className="font-score text-2xl text-pitch">{pickLabels[selectedPick]}</p>
-          </div>
-          <div>
-            <p className="text-xs font-black uppercase text-white/45">Score</p>
-            <p className="font-score text-2xl text-gold">
-              {homeScore}-{awayScore}
-            </p>
+            <p className="font-score text-xl text-pitch">{pickLabels[selectedPick]}</p>
           </div>
           <div>
             <p className="text-xs font-black uppercase text-white/45">Match ID</p>
-            <p className="font-score text-2xl text-white">#{match.id}</p>
+            <p className="font-score text-xl text-white">#{match.id}</p>
           </div>
         </div>
 
-        {isPredictionLoading ? (
-          <div className="loading-banner">Reading on-chain ticket state...</div>
-        ) : null}
+        {isPredictionLoading ? <div className="loading-banner">Reading on-chain ticket state...</div> : null}
 
         {predictionError ? (
-          <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
-            Unable to read this ticket from X Layer.
-          </div>
+          <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">Unable to read this ticket from X Layer.</div>
         ) : null}
 
         {isPending || isConfirming ? (
-          <div className="loading-banner">
-            {isPending ? "Sending transaction..." : "Waiting for X Layer confirmation..."}
-          </div>
+          <div className="loading-banner">{isPending ? "Sending transaction..." : "Waiting for X Layer confirmation..."}</div>
         ) : null}
 
         {alreadyMinted && prediction ? (
           <div className="success-panel">
             <div className="flex items-start gap-3">
-              <ShieldCheck size={24} color="#00FF85" />
+              <ShieldCheck size={24} color="#00b36b" />
               <div>
                 <p className="text-sm font-black uppercase text-pitch">Minted</p>
-                <p className="font-heading text-3xl uppercase leading-none">Ticket locked on-chain</p>
-                <p className="mt-2 text-sm text-white/70">
-                  Token #{prediction[6].toString()} recorded for {pickLabels[prediction[1] as PickChoice]}{" "}
-                  {prediction[2]}-{prediction[3]}.
-                </p>
+                <p className="font-heading text-2xl uppercase leading-none">Ticket locked on-chain</p>
+                <p className="mt-2 text-sm text-white/70">Token #{prediction[4].toString()} recorded for {pickLabels[prediction[1] as PickChoice]}.</p>
               </div>
             </div>
             <div className="success-actions">
               {explorerUrl ? (
-                <a className="secondary-action w-full" href={explorerUrl} target="_blank" rel="noreferrer">
-                  View on X Layer Explorer
-                </a>
+                <a className="secondary-action w-full" href={explorerUrl} target="_blank" rel="noreferrer">View on X Layer Explorer</a>
               ) : null}
               {shareUrl ? (
-                <a className="primary-action w-full" href={shareUrl} target="_blank" rel="noreferrer">
-                  <Share2 size={18} />
-                  Share on X
-                </a>
+                <a className="primary-action w-full" href={shareUrl} target="_blank" rel="noreferrer"><Share2 size={18} />Share on X</a>
               ) : null}
             </div>
           </div>
@@ -306,38 +243,25 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
         {isConfirmed && !alreadyMinted ? (
           <div className="success-panel">
             <div className="flex items-start gap-3">
-              <ShieldCheck size={24} color="#00FF85" />
+              <ShieldCheck size={24} color="#00b36b" />
               <div>
                 <p className="text-sm font-black uppercase text-pitch">Success</p>
-                <p className="font-heading text-3xl uppercase leading-none">Prediction minted</p>
-                <p className="mt-2 text-sm text-white/70">
-                  Your {pickLabels[(prediction?.[1] as PickChoice | undefined) ?? submittedPick ?? selectedPick]} call is
-                  live
-                  on X Layer testnet.
-                </p>
+                <p className="font-heading text-2xl uppercase leading-none">Prediction minted</p>
+                <p className="mt-2 text-sm text-white/70">Your {pickLabels[(prediction?.[1] as PickChoice | undefined) ?? submittedPick ?? selectedPick]} call is live on X Layer testnet.</p>
               </div>
             </div>
             <div className="success-actions">
               {explorerUrl ? (
-                <a className="secondary-action w-full" href={explorerUrl} target="_blank" rel="noreferrer">
-                  View on X Layer Explorer
-                </a>
+                <a className="secondary-action w-full" href={explorerUrl} target="_blank" rel="noreferrer">View on X Layer Explorer</a>
               ) : null}
               {shareUrl ? (
-                <a className="primary-action w-full" href={shareUrl} target="_blank" rel="noreferrer">
-                  <Share2 size={18} />
-                  Share on X
-                </a>
+                <a className="primary-action w-full" href={shareUrl} target="_blank" rel="noreferrer"><Share2 size={18} />Share on X</a>
               ) : null}
             </div>
           </div>
         ) : null}
 
-        {localError ? (
-          <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
-            {localError}
-          </div>
-        ) : null}
+        {localError ? <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">{localError}</div> : null}
       </div>
     </section>
   );

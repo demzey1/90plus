@@ -1,13 +1,12 @@
-// @ts-nocheck
-import { network } from "hardhat";
+import { ethers } from "hardhat";
 
-const { ethers, networkName } = await network.create();
 const [deployer] = await ethers.getSigners();
 
-console.log(`Deploying NinetyPlus to ${networkName}...`);
+console.log(`Deploying NinetyPlus...`);
 console.log("Deployer:", deployer.address);
 
-const ninetyPlus = await ethers.deployContract("NinetyPlus");
+const NinetyPlus = await ethers.getContractFactory("NinetyPlus");
+const ninetyPlus = await NinetyPlus.deploy();
 
 console.log("Waiting for deployment confirmation...");
 await ninetyPlus.waitForDeployment();

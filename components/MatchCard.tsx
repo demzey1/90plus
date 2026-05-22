@@ -1,6 +1,12 @@
+"use client";
+
 import { CalendarClock, MapPin, Shield } from "lucide-react";
 import Link from "next/link";
+import { useMemo } from "react";
+import { useReadContract } from "wagmi";
 import type { Fixture } from "@/lib/contract";
+import { NINETY_PLUS_ADDRESS, ninetyPlusAbi } from "@/lib/contract";
+import { xLayerTestnet } from "@/lib/wagmi";
 
 const formatKickoff = (value: string) =>
   new Intl.DateTimeFormat("en", {
@@ -12,11 +18,29 @@ const formatKickoff = (value: string) =>
   }).format(new Date(value));
 
 export function MatchCard({ match }: { match: Fixture }) {
+  const { data: matchData } = useReadContract({
+    address: NINETY_PLUS_ADDRESS,
+    abi: ninetyPlusAbi,
+    functionName: "matches",
+    args: [BigInt(match.id)],
+    chainId: xLayerTestnet.id,
+  });
+
+  const isHidden = useMemo(() => {
+    if (!matchData) return false;
+    const data = matchData as any;
+    return data.isHidden === true || data.finalized === true;
+  }, [matchData]);
+
+  if (isHidden) {
+    return null;
+  }
+
   return (
     <Link className="match-card group" href={`/match/${match.id}`}>
       <div className="relative z-10 flex items-center justify-between gap-3">
         <span className="eyebrow">{match.group}</span>
-        <Shield size={18} color="#00FF85" />
+        <Shield size={18} color="#00b36b" />
       </div>
 
       <div className="relative z-10 mt-5 flex items-center justify-between gap-3">
@@ -39,11 +63,11 @@ export function MatchCard({ match }: { match: Fixture }) {
 
       <div className="relative z-10 mt-6 space-y-3 text-sm muted">
         <p className="flex items-center gap-2">
-          <CalendarClock size={16} color="#FFD700" />
+          <CalendarClock size={16} color="#ffd700" />
           {formatKickoff(match.kickoff)}
         </p>
         <p className="flex items-center gap-2">
-          <MapPin size={16} color="#00FF85" />
+          <MapPin size={16} color="#00b36b" />
           {match.city}
         </p>
       </div>
