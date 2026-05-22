@@ -1,0 +1,10 @@
+.env
+node_modules/
+.next/
+artifacts/
+cache/
+coverage/
+typechain-types/
+types/
+next-dev.*.log
+next-start.*.log
