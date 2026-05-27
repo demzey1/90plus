@@ -86,6 +86,14 @@ export function AdminPanel() {
   const [finalizeHash, setFinalizeHash] = useState<`0x${string}` | undefined>();
   const [finalizeError, setFinalizeError] = useState("");
 
+  const [hideMatchId, setHideMatchId] = useState("1");
+  const [hideHash, setHideHash] = useState<`0x${string}` | undefined>();
+  const [hideError, setHideError] = useState("");
+  const [isLoading: hideConfirming, isSuccess: hideConfirmed] = useWaitForTransactionReceipt({
+    hash: hideHash,
+    chainId: xLayerTestnet.id,
+  });
+
   const { data: ownerAddress } = useReadContract({
     address: NINETY_PLUS_ADDRESS,
     abi: ninetyPlusAbi,
@@ -110,6 +118,11 @@ export function AdminPanel() {
 
   const { isLoading: finalizeConfirming, isSuccess: finalizeConfirmed } = useWaitForTransactionReceipt({
     hash: finalizeHash,
+    chainId: xLayerTestnet.id,
+  });
+
+  const { isLoading: hideConfirming, isSuccess: hideConfirmed } = useWaitForTransactionReceipt({
+    hash: hideHash,
     chainId: xLayerTestnet.id,
   });
 
@@ -189,6 +202,36 @@ export function AdminPanel() {
       setFinalizeHash(txHash);
     } catch (error) {
       setFinalizeError(error instanceof Error ? error.message : "Finalize match failed");
+    }
+  }
+
+  async function handleHideMatch() {
+    setHideError("");
+
+    if (!unlocked) {
+      setHideError("Unlock admin access with the owner wallet or password.");
+      return;
+    }
+
+    try {
+      const matchId = Number(hideMatchId);
+
+      if (!Number.isInteger(matchId) || matchId <= 0) {
+        setHideError("Enter a valid match id.");
+        return;
+      }
+
+      await ensureChain();
+      const txHash = await writeContractAsync({
+        address: NINETY_PLUS_ADDRESS,
+        abi: ninetyPlusAbi,
+        functionName: "hideMatch",
+        args: [BigInt(matchId)],
+        chainId: xLayerTestnet.id,
+      });
+      setHideHash(txHash);
+    } catch (error) {
+      setHideError(error instanceof Error ? error.message : "Hide match failed");
     }
   }
 
@@ -311,6 +354,31 @@ export function AdminPanel() {
         ) : null}
         {finalizeConfirmed ? <div className="loading-banner mt-4">Match finalized and points distributed.</div> : null}
         {finalizeError ? <div className="mt-4 rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">{finalizeError}</div> : null}
+      </AdminActionCard>
+
+      <AdminActionCard
+        title="Hide Match"
+        description="Hide finalized matches from public view."
+        icon={ShieldCheck}
+      >
+        <div className="admin-grid">
+          <Field label="Match ID" type="number" value={finalizeMatchId} onChange={setFinalizeMatchId} />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button className="primary-action" type="button" disabled={isPending} onClick={handleHideMatch}>
+            <ShieldCheck size={18} />
+            Hide Match
+          </button>
+        </div>
+
+        {finalizeHash ? (
+          <a className="mt-4 inline-flex text-sm font-black text-pitch" href={explorerUrl(finalizeHash)} target="_blank" rel="noreferrer">
+            View hide tx on X Layer Explorer
+          </a>
+        ) : null}
+        {hideConfirmed ? <div className="loading-banner mt-4">Match hidden successfully.</div> : null}
+        {hideError ? <div className="mt-4 rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">{hideError}</div> : null}
       </AdminActionCard>
     </div>
   );

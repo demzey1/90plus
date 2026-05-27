@@ -48,6 +48,15 @@ export const ninetyPlusAbi = [
   },
   {
     type: "function",
+    name: "hideMatch",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "matchId", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "predictions",
     stateMutability: "view",
     inputs: [
@@ -92,7 +101,15 @@ export const ninetyPlusAbi = [
       { name: "homeScore", type: "uint8" },
       { name: "awayScore", type: "uint8" },
       { name: "aiPrediction", type: "string" },
+      { name: "isHidden", type: "bool" },
     ],
+  },
+  {
+    type: "function",
+    name: "nextMatchId",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
   },
 ] as const;
 

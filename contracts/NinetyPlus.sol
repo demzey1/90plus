@@ -16,16 +16,21 @@ contract NinetyPlus is ERC721, Ownable {
         uint8 homeScore;
         uint8 awayScore;
         string aiPrediction;
+        bool isHidden;
     }
 
     struct Prediction {
         bool submitted;
         Pick pick;
-        uint8 predictedHomeScore;
-        uint8 predictedAwayScore;
         uint256 submittedAt;
         uint256 points;
         uint256 tokenId;
+    }
+
+    struct UserStats {
+        uint256 totalPoints;
+        uint256 predictionCount;
+        uint256 correctPredictions;
     }
 
     uint256 public nextMatchId = 1;
@@ -34,13 +39,12 @@ contract NinetyPlus is ERC721, Ownable {
     mapping(uint256 => MatchInfo) public matches;
     mapping(uint256 => mapping(address => Prediction)) public predictions;
     mapping(uint256 => address[]) private matchFans;
-    mapping(address => uint256) public totalPoints;
-    mapping(address => uint256) public predictionCount;
+    mapping(address => UserStats) public userStats;
 
     event MatchCreated(uint256 indexed matchId, string homeTeam, string awayTeam, uint256 kickoffTime);
-    event AiPredictionSet(uint256 indexed matchId, string aiPrediction);
-    event PredictionSubmitted(uint256 indexed matchId, address indexed fan, Pick pick, uint8 predictedHomeScore, uint8 predictedAwayScore, uint256 tokenId);
+    event PredictionSubmitted(uint256 indexed matchId, address indexed fan, Pick pick, uint256 tokenId);
     event MatchFinalized(uint256 indexed matchId, uint8 homeScore, uint8 awayScore);
+    event MatchHidden(uint256 indexed matchId);
 
     constructor() ERC721("90+ Prediction Ticket", "90T") Ownable(msg.sender) {}
 
@@ -60,78 +64,58 @@ contract NinetyPlus is ERC721, Ownable {
             finalized: false,
             homeScore: 0,
             awayScore: 0,
-            aiPrediction: aiPrediction
+            aiPrediction: aiPrediction,
+            isHidden: false
         });
         emit MatchCreated(matchId, homeTeam, awayTeam, kickoffTime);
-        emit AiPredictionSet(matchId, aiPrediction);
     }
 
-    function submitPrediction(
-        uint256 matchId,
-        Pick pick,
-        uint8 predictedHomeScore,
-        uint8 predictedAwayScore
-    ) external {
+    function submitPrediction(uint256 matchId, Pick pick) external {
         MatchInfo storage game = matches[matchId];
-        require(game.exists, "Match does not exist");
-        require(block.timestamp < game.kickoffTime, "Prediction closed");
+        require(game.exists && !game.finalized && block.timestamp < game.kickoffTime, "Invalid match");
         require(!predictions[matchId][msg.sender].submitted, "Already predicted");
 
         uint256 tokenId = nextTokenId++;
-
-        predictions[matchId][msg.sender] = Prediction({
-            submitted: true,
-            pick: pick,
-            predictedHomeScore: predictedHomeScore,
-            predictedAwayScore: predictedAwayScore,
-            submittedAt: block.timestamp,
-            points: 0,
-            tokenId: tokenId
-        });
-        predictionCount[msg.sender] += 1;
+        predictions[matchId][msg.sender] = Prediction(true, pick, block.timestamp, 0, tokenId);
         matchFans[matchId].push(msg.sender);
 
         _safeMint(msg.sender, tokenId);
+        userStats[msg.sender].predictionCount += 1;
 
-        emit PredictionSubmitted(matchId, msg.sender, pick, predictedHomeScore, predictedAwayScore, tokenId);
+        emit PredictionSubmitted(matchId, msg.sender, pick, tokenId);
     }
 
-    function finalizeMatch(
-        uint256 matchId,
-        uint8 homeScore,
-        uint8 awayScore
-    ) external onlyOwner {
+    function finalizeMatch(uint256 matchId, uint8 homeScore, uint8 awayScore) external onlyOwner {
         MatchInfo storage game = matches[matchId];
-        require(game.exists, "Match does not exist");
-        require(!game.finalized, "Already finalized");
+        require(game.exists && !game.finalized, "Invalid");
 
         game.finalized = true;
         game.homeScore = homeScore;
         game.awayScore = awayScore;
 
-        Pick actualPick = Pick.Draw;
-        if (homeScore > awayScore) actualPick = Pick.Home;
-        else if (awayScore > homeScore) actualPick = Pick.Away;
+        Pick actualPick = (homeScore > awayScore) ? Pick.Home : (awayScore > homeScore) ? Pick.Away : Pick.Draw;
 
         address[] storage fans = matchFans[matchId];
         for (uint256 i = 0; i < fans.length; i++) {
             Prediction storage p = predictions[matchId][fans[i]];
             if (p.submitted && p.points == 0) {
-                uint256 earned = 0;
-                if (p.pick == actualPick) earned += 10;
-                if (p.predictedHomeScore == homeScore && p.predictedAwayScore == awayScore) earned += 20;
+                uint256 earned = (p.pick == actualPick) ? 10 : 0;
                 p.points = earned;
-                totalPoints[fans[i]] += earned;
+                userStats[fans[i]].totalPoints += earned;
+                if (earned > 0) userStats[fans[i]].correctPredictions += 1;
             }
         }
         emit MatchFinalized(matchId, homeScore, awayScore);
     }
 
-    function getMatch(uint256 matchId) external view returns (MatchInfo memory) {
-        return matches[matchId];
+    function hideMatch(uint256 matchId) external onlyOwner {
+        MatchInfo storage game = matches[matchId];
+        require(game.exists && game.finalized, "Invalid");
+        game.isHidden = true;
+        emit MatchHidden(matchId);
     }
 
-    function getPrediction(uint256 matchId, address fan) external view returns (Prediction memory) {
-        return predictions[matchId][fan];
+    function getUserStats(address user) external view returns (UserStats memory) {
+        return userStats[user];
     }
 }

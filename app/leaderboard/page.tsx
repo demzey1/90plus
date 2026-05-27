@@ -10,27 +10,17 @@ export default function LeaderboardPage() {
           <h1 className="section-title">Leaderboard</h1>
         </div>
         <p className="section-copy">
-          Ranked by prediction points. Exact scores hit hardest, correct outcomes keep you alive.
+          Ranked by correct outcome picks. 10 points for each correct winner or draw. No score bonuses.
         </p>
       </section>
 
       <LeaderboardBoard />
 
-      <section className="mt-5 grid gap-4 md:grid-cols-3">
+      <section className="mt-5 grid gap-4 md:grid-cols-1">
         <div className="stat-tile">
           <Trophy color="#FFD700" />
           <span className="stat-number">10</span>
           <p className="muted">Correct outcome points</p>
-        </div>
-        <div className="stat-tile">
-          <Trophy color="#FFD700" />
-          <span className="stat-number">20</span>
-          <p className="muted">Exact score points</p>
-        </div>
-        <div className="stat-tile">
-          <Trophy color="#FFD700" />
-          <span className="stat-number">30</span>
-          <p className="muted">Perfect match total</p>
         </div>
       </section>
     </main>
