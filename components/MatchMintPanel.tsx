@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, Share2, ShieldCheck, Ticket } from "lucide-react";
+import { Loader2, Minus, Plus, Share2, ShieldCheck, Ticket } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { zeroAddress } from "viem";
 import {
@@ -192,7 +192,7 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
   }
 
   return (
-    <section className="panel panel-glow relative overflow-hidden p-5 md:p-7">
+    <section className="relative overflow-hidden rounded-sm border border-white/10 bg-[#0d0d0d] p-5 md:p-7">
       {celebrate ? (
         <div className="confetti-layer" aria-hidden="true">
           {confettiPieces.map((piece, index) => (
@@ -263,13 +263,14 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
         ) : null}
 
         {predictionError ? (
-          <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
-            Unable to read this ticket from X Layer.
+          <div className="rounded-sm border border-red-500/20 bg-red-500/5 p-4 text-center text-xs font-bold uppercase tracking-widest text-red-400/60">
+            Network Congestion. RPC is lagging.
           </div>
         ) : null}
 
         {isPending || isConfirming ? (
-          <div className="loading-banner">
+          <div className="flex items-center justify-center gap-3 rounded-sm bg-white/5 p-4 text-xs font-black uppercase tracking-[0.2em] text-[#888]">
+            <Loader2 className="animate-spin" size={16} />
             {isPending ? "Sending transaction..." : "Waiting for X Layer confirmation..."}
           </div>
         ) : null}

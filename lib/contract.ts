@@ -254,14 +254,7 @@ export type LeaderboardSeed = {
   form: string;
 };
 
-export const leaderboardSeeds: LeaderboardSeed[] = [
-  { name: "Pitch Oracle", address: "0x9F4a7d6e0D3cC21A3a4C95B8dC0dA0C91aE5C21A", tickets: 14, form: "6W" },
-  { name: "Last-Minute FC", address: "0x23E18dEeAd9147D0bE6D6a8b6b7e3F3D7D4f47D7", tickets: 13, form: "5W" },
-  { name: "VAR Prophet", address: "0x71Bfd9e0C331091Ea2F4A14e0D1c3C8F5a0B091E", tickets: 12, form: "4W" },
-  { name: "Neon Ultra", address: "0xA02a10f18eD48eD48eD48eD48eD48eD48eD48eD4", tickets: 11, form: "3W" },
-  { name: "Golden Boot DAO", address: "0xDD0b19f8a1A019F8dD0b19f8a1A019F8dD0b19f8", tickets: 9, form: "2W" },
-  { name: "Clean Sheet Cartel", address: "0x6C1ab8116C1AB8116c1aB8116c1Ab8116C1ab811", tickets: 8, form: "2W" },
-];
+export const leaderboardSeeds: LeaderboardSeed[] = [];
 
 export const pickLabels = ["HOME", "DRAW", "AWAY"] as const;
 

@@ -7,8 +7,8 @@ import { Providers } from "./providers";
 import { TopNav } from "@/components/TopNav";
 
 export const metadata: Metadata = {
-  title: "90+ | X Cup Prediction Tickets",
-  description: "Predict World Cup matches, mint NFT tickets, and prove you know ball on X Layer.",
+  title: "90+ | World Cup Prediction Vault",
+  description: "Secure your World Cup predictions on-chain. Mint NFT tickets and prove your expertise on X Layer.",
 };
 
 export default function RootLayout({

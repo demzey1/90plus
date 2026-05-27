@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Fuel, Lock, Medal, Shield, Ticket, Trophy } from "lucide-react";
+import { ArrowUpRight, Fuel, Lock, Shield, Ticket, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WalletButton } from "./WalletButton";
@@ -18,33 +18,30 @@ export function TopNav() {
   const pathname = usePathname();
 
   return (
-    <header className="stadium-nav">
-      <div className="nav-inner">
-        <Link className="brand-mark" href="/">
-          <Medal size={28} />
+    <header className="sticky top-0 z-[100] border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 md:px-6">
+        <Link href="/" className="font-heading text-3xl tracking-tighter text-[#f5f5f5]">
           90+
         </Link>
 
-        <nav className="nav-links" aria-label="Primary">
+        <nav className="hidden items-center gap-8 text-[10px] font-black uppercase tracking-[0.3em] text-[#888] md:flex">
           {nav.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
-              className={`nav-link ${pathname === href ? "nav-link-active" : ""}`}
+              className={`transition-colors hover:text-[#f5f5f5] ${pathname === href ? "text-[#00FF85]" : ""}`}
               href={href}
             >
-              <Icon size={16} />
               {label}
             </Link>
           ))}
         </nav>
 
-        <div className="nav-actions">
-          <Link className="faucet-action" href={faucetUrl} target="_blank" rel="noreferrer">
+        <div className="flex items-center gap-4">
+          <Link className="hidden items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#555] transition-colors hover:text-[#888] lg:flex" href={faucetUrl} target="_blank" rel="noreferrer">
             <Fuel size={16} />
-            Get Free Test OKB
-            <ArrowUpRight size={15} />
+            Faucet
           </Link>
-          <WalletButton compact />
+          <WalletButton />
         </div>
       </div>
     </header>

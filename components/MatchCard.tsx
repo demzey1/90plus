@@ -1,22 +1,24 @@
-import { CalendarClock, MapPin, Shield } from "lucide-react";
+"use client";
+
+import { CalendarClock, MapPin } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { Fixture } from "@/lib/contract";
 
-const formatKickoff = (value: string) =>
-  new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }).format(new Date(value));
+const formatKickoff = (value: string) => {
+  try {
+    return new Date(value).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return value; }
+};
 
 export function MatchCard({ match }: { match: Fixture }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
-    <Link className="match-card group" href={`/match/${match.id}`}>
+    <Link className="group block rounded-sm border border-white/10 bg-[#0d0d0d] p-5 transition-colors hover:border-[#00FF85]/30" href={`/match/${match.id}`}>
       <div className="relative z-10 flex items-center justify-between gap-3">
-        <span className="eyebrow">{match.group}</span>
-        <Shield size={18} color="#00FF85" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-[#555]">{match.group}</span>
       </div>
 
       <div className="relative z-10 mt-5 flex items-center justify-between gap-3">
@@ -37,21 +39,15 @@ export function MatchCard({ match }: { match: Fixture }) {
         </div>
       </div>
 
-      <div className="relative z-10 mt-6 space-y-3 text-sm muted">
-        <p className="flex items-center gap-2">
-          <CalendarClock size={16} color="#FFD700" />
-          {formatKickoff(match.kickoff)}
+      <div className="relative z-10 mt-6 space-y-2 text-[11px] font-bold uppercase tracking-wider text-[#666]">
+        <p className="flex items-center gap-2 group-hover:text-[#888]">
+          <CalendarClock size={14} />
+          {mounted ? formatKickoff(match.kickoff) : "Loading..."}
         </p>
-        <p className="flex items-center gap-2">
-          <MapPin size={16} color="#00FF85" />
+        <p className="flex items-center gap-2 group-hover:text-[#888]">
+          <MapPin size={14} />
           {match.city}
         </p>
-      </div>
-
-      <div className="relative z-10 mt-8 grid grid-cols-3 gap-2 font-score text-xs">
-        <span className="rounded-lg border border-white/10 bg-white/5 p-2 text-center">{match.odds.home}%</span>
-        <span className="rounded-lg border border-white/10 bg-white/5 p-2 text-center">{match.odds.draw}%</span>
-        <span className="rounded-lg border border-white/10 bg-white/5 p-2 text-center">{match.odds.away}%</span>
       </div>
     </Link>
   );

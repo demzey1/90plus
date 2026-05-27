@@ -79,7 +79,7 @@ function TeamPanel({
       />
       <div className="min-w-0">
         <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-white/50">{label}</p>
-        <h1 className="mt-1 break-words font-heading text-3xl uppercase leading-[0.95] text-white md:text-4xl">
+        <h1 className="mt-1 break-words font-heading text-2xl uppercase leading-none text-white md:text-3xl">
           {name}
         </h1>
       </div>
@@ -300,7 +300,7 @@ export default function MatchPage() {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 1500);
     } catch (error) {
-      setLocalError(error instanceof Error ? error.message : "Transaction failed");
+      setLocalError("Transaction failed. Check your balance or try again.");
     }
   }
 

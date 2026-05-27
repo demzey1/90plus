@@ -2,7 +2,7 @@
 
 import { CalendarClock, MapPin, RefreshCcw, ShieldCheck, Ticket, Trophy, Wallet } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { zeroAddress } from "viem";
 import { useAccount, useReadContracts } from "wagmi";
 import {
@@ -22,29 +22,24 @@ type TicketRecord = {
   prediction: ContractPrediction;
 };
 
-const formatKickoff = (value: string) =>
-  new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }).format(new Date(value));
+const formatKickoff = (value: string) => {
+  try {
+    return new Date(value).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return value; }
+};
 
 function TicketCard({ ticket }: { ticket: TicketRecord }) {
   const { match, prediction } = ticket;
   const pick = pickLabels[prediction[1] as PickChoice];
-  let pickClass = "ticket-pick-home";
-  if (pick === "DRAW") pickClass = "ticket-pick-draw";
-  if (pick === "AWAY") pickClass = "ticket-pick-away";
+  
   return (
-    <article className={`overflow-hidden rounded-lg border bg-[#0c1210]/90 p-4 ${pickClass}`}>
+    <article className="overflow-hidden rounded-sm border border-white/10 bg-[#0d0d0d] p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#00FF85]">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#888]">
             Ticket #{prediction[6].toString()}
           </p>
-          <h2 className="mt-2 break-words font-heading text-3xl uppercase leading-none text-white">
+          <h2 className="mt-2 break-words font-heading text-2xl uppercase leading-none text-[#f5f5f5]">
             {match.home} vs {match.away}
           </h2>
         </div>
@@ -52,16 +47,16 @@ function TicketCard({ ticket }: { ticket: TicketRecord }) {
       </div>
       <div className="mt-4 flex items-center justify-center gap-6">
         <div className={`flex flex-col items-center ${pick === "HOME" ? "font-black text-[#00FF85] scale-110" : "opacity-60"}`}>
-          <img className="country-flag-large" src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt={match.home} />
-          <span className="mt-2 text-lg uppercase">Home</span>
+          <img className="h-10 w-10 rounded-full object-cover" src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt={match.home} />
+          <span className="mt-2 text-[10px] uppercase tracking-tighter">Home</span>
         </div>
         <div className={`flex flex-col items-center ${pick === "DRAW" ? "font-black text-[#FFD700] scale-110" : "opacity-60"}`}>
-          <span className="country-flag-large" style={{ fontSize: 48 }}>⚪</span>
-          <span className="mt-2 text-lg uppercase">Draw</span>
+          <span className="h-10 w-10 flex items-center justify-center text-xl">⚪</span>
+          <span className="mt-2 text-[10px] uppercase tracking-tighter">Draw</span>
         </div>
         <div className={`flex flex-col items-center ${pick === "AWAY" ? "font-black text-[#FF3B5C] scale-110" : "opacity-60"}`}>
-          <img className="country-flag-large" src={`https://flagcdn.com/w80/${match.awayFlag}.png`} alt={match.away} />
-          <span className="mt-2 text-lg uppercase">Away</span>
+          <img className="h-10 w-10 rounded-full object-cover" src={`https://flagcdn.com/w80/${match.awayFlag}.png`} alt={match.away} />
+          <span className="mt-2 text-[10px] uppercase tracking-tighter">Away</span>
         </div>
       </div>
       <div className="mt-4 grid gap-2 text-sm leading-6 text-white/60">
@@ -120,6 +115,9 @@ function EmptyState() {
 
 export default function MyTicketsPage() {
   const { address, isConnected } = useAccount();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const predictionContracts = useMemo(
     () =>
       fixtures.map(
@@ -200,17 +198,17 @@ export default function MyTicketsPage() {
   const partialReadFailure = data?.some((result) => result.status === "failure") ?? false;
 
   return (
-    <main className="min-h-screen bg-[#080A0A] px-4 pb-24 sm:px-6">
+    <main className="min-h-screen bg-[#0a0a0a] px-4 pb-24 text-[#f5f5f5] sm:px-6">
       <section className="mx-auto w-full max-w-6xl pt-8 md:pt-12">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
-            <span className="text-xs font-black uppercase tracking-[0.24em] text-[#00FF85]">
-              NFT Ticket Vault
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00FF85]">
+              Prediction Vault
             </span>
-            <h1 className="mt-3 font-heading text-4xl uppercase leading-[0.92] text-white drop-shadow-[0_0_16px_rgba(0,255,133,0.36)] md:text-6xl">
+            <h1 className="mt-3 font-heading text-4xl uppercase leading-none md:text-6xl">
               My Tickets
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70 md:text-base">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/55 md:text-base">
               Fresh on-chain reads from the deployed 90+ contract. Newly confirmed mints are refetched
               immediately and continue polling while this page is open.
             </p>

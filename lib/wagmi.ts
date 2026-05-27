@@ -11,10 +11,10 @@ export const xLayerTestnet = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ["https://xlayertestrpc.okx.com"],
+      http: ["https://testrpc.xlayer.tech/terigon"],
     },
     public: {
-      http: ["https://xlayertestrpc.okx.com"],
+      http: ["https://testrpc.xlayer.tech/terigon"],
     },
   },
   blockExplorers: {
@@ -36,4 +36,3 @@ export const wagmiConfig = createConfig({
     [xLayerTestnet.id]: http(xLayerTestnet.rpcUrls.default.http[0]),
   },
 });
-

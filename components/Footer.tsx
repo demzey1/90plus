@@ -12,7 +12,7 @@ export function Footer() {
         <div>
           <p className="footer-brand">90+</p>
           <p className="footer-copy">
-            Built on X Layer for X Cup Hackathon
+            Built on X Layer
           </p>
         </div>
 

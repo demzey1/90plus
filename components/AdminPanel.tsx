@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Lock, PlusCircle, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Lock, Loader2, PlusCircle, ShieldCheck, Trophy } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { zeroAddress } from "viem";
 import {
@@ -13,7 +13,6 @@ import {
 import { NINETY_PLUS_ADDRESS, ninetyPlusAbi } from "@/lib/contract";
 import { xLayerTestnet } from "@/lib/wagmi";
 
-const ADMIN_PASSWORD = "xlayer90";
 const ADMIN_OWNER = "0x23E258ce31e96cf32249cD75B2127677ac23c47D";
 
 const faucetUrl = "https://web3.okx.com/xlayer/faucet";
@@ -71,8 +70,6 @@ export function AdminPanel() {
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync, isPending } = useWriteContract();
 
-  const [password, setPassword] = useState("");
-  const [manualUnlock, setManualUnlock] = useState(false);
   const [createHome, setCreateHome] = useState("");
   const [createAway, setCreateAway] = useState("");
   const [createKickoff, setCreateKickoff] = useState("");
@@ -104,7 +101,7 @@ export function AdminPanel() {
     return address.toLowerCase() === ADMIN_OWNER.toLowerCase();
   }, [address, ownerAddress]);
 
-  const unlocked = manualUnlock || unlockByOwner;
+  const unlocked = unlockByOwner;
 
   const { isLoading: createConfirming, isSuccess: createConfirmed } = useWaitForTransactionReceipt({
     hash: createHash,
@@ -234,55 +231,15 @@ export function AdminPanel() {
 
   if (!unlocked) {
     return (
-      <section className="panel admin-gate">
-        <div className="admin-gate-copy">
-          <Lock size={28} color="#FFD700" />
-          <div>
-            <p className="eyebrow">Admin Access</p>
-            <h2 className="font-heading text-5xl uppercase">Tunnel Control</h2>
-            <p className="mt-2 text-white/66">
-              Connect the contract owner wallet or enter the simple admin password to create and finalize matches.
-            </p>
-          </div>
-        </div>
-
-        <div className="admin-login">
-          <label className="admin-field">
-            <span>Password</span>
-            <input
-              type="password"
-              value={password}
-              placeholder="Enter admin password"
-              onChange={(event) => {
-                const next = event.target.value;
-                setPassword(next);
-                setManualUnlock(next === ADMIN_PASSWORD);
-              }}
-            />
-          </label>
-
-          <button
-            className="primary-action w-full"
-            type="button"
-            onClick={() => setManualUnlock(password === ADMIN_PASSWORD)}
-          >
-            <ShieldCheck size={18} />
-            Unlock Admin
-          </button>
-
-          <a className="secondary-action w-full" href={faucetUrl} target="_blank" rel="noreferrer">
-            Get Free Test OKB
-            <ArrowRight size={16} />
-          </a>
-        </div>
-
-        {isConnected ? (
-          <p className="mt-5 text-sm text-white/55">
-            Connected wallet: {address ?? zeroAddress}
-            {unlockByOwner ? " and it matches the owner address." : ""}
-          </p>
-        ) : null}
-      </section>
+      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-sm border border-red-500/20 bg-red-500/5 p-8 text-center">
+        <Lock className="mb-4 text-red-500" size={48} />
+        <h2 className="font-heading text-4xl uppercase text-white">Access Denied</h2>
+        <p className="mt-2 max-w-md text-white/60">
+          This panel is restricted to the contract owner. Please connect the authorized wallet.
+        </p>
+        <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-white/20">Authorized Address</p>
+        <p className="mt-1 font-mono text-xs text-white/40">{ADMIN_OWNER}</p>
+      </div>
     );
   }
 
