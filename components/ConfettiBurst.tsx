@@ -29,16 +29,22 @@ export default function ConfettiBurst({ run = true }: { run?: boolean }) {
     let animationId: number;
 
     function draw() {
+      if (!ctx) return;
+
       ctx.clearRect(0, 0, W, H);
+
       for (const c of confetti) {
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, 2 * Math.PI);
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.r * 0.01);
         ctx.fillStyle = c.color;
-        ctx.globalAlpha = 0.75;
-        ctx.fill();
+        ctx.fillRect(-c.r, -c.r, c.r * 2, c.r * 2);
+        ctx.restore();
+
         c.y += c.d + Math.sin(frame / 8 + c.x);
         c.x += Math.sin(frame / 12 + c.y) * 0.7;
       }
+
       frame++;
       if (frame < 100) animationId = requestAnimationFrame(draw);
       else ctx.clearRect(0, 0, W, H);
