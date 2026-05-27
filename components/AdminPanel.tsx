@@ -89,11 +89,6 @@ export function AdminPanel() {
   const [hideMatchId, setHideMatchId] = useState("1");
   const [hideHash, setHideHash] = useState<`0x${string}` | undefined>();
   const [hideError, setHideError] = useState("");
-  const [isLoading: hideConfirming, isSuccess: hideConfirmed] = useWaitForTransactionReceipt({
-    hash: hideHash,
-    chainId: xLayerTestnet.id,
-  });
-
   const { data: ownerAddress } = useReadContract({
     address: NINETY_PLUS_ADDRESS,
     abi: ninetyPlusAbi,
@@ -244,7 +239,7 @@ export function AdminPanel() {
           <Lock size={28} color="#FFD700" />
           <div>
             <p className="eyebrow">Admin Access</p>
-            <h2 className="font-heading text-5xl uppercase">Unlock The Tunnel</h2>
+            <h2 className="font-heading text-5xl uppercase">Tunnel Control</h2>
             <p className="mt-2 text-white/66">
               Connect the contract owner wallet or enter the simple admin password to create and finalize matches.
             </p>
@@ -362,18 +357,18 @@ export function AdminPanel() {
         icon={ShieldCheck}
       >
         <div className="admin-grid">
-          <Field label="Match ID" type="number" value={finalizeMatchId} onChange={setFinalizeMatchId} />
+          <Field label="Match ID" type="number" value={hideMatchId} onChange={setHideMatchId} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          <button className="primary-action" type="button" disabled={isPending} onClick={handleHideMatch}>
+          <button className="primary-action" type="button" disabled={isPending || hideConfirming} onClick={handleHideMatch}>
             <ShieldCheck size={18} />
-            Hide Match
+            {hideConfirming ? "Hiding..." : "Hide Match"}
           </button>
         </div>
 
-        {finalizeHash ? (
-          <a className="mt-4 inline-flex text-sm font-black text-pitch" href={explorerUrl(finalizeHash)} target="_blank" rel="noreferrer">
+        {hideHash ? (
+          <a className="mt-4 inline-flex text-sm font-black text-pitch" href={explorerUrl(hideHash)} target="_blank" rel="noreferrer">
             View hide tx on X Layer Explorer
           </a>
         ) : null}

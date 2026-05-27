@@ -17,9 +17,6 @@ import {
 import { xLayerTestnet } from "@/lib/wagmi";
 import { WalletButton } from "@/components/WalletButton";
 
-const TICKET_REFRESH_KEY = "ninety-plus-ticket-refresh";
-const TICKET_REFRESH_EVENT = "ninety-plus-ticket-refresh";
-
 type TicketRecord = {
   match: Fixture;
   prediction: ContractPrediction;
@@ -33,44 +30,6 @@ const formatKickoff = (value: string) =>
     minute: "2-digit",
     timeZoneName: "short",
   }).format(new Date(value));
-
-function TeamLine({
-  label,
-  name,
-  flag,
-}: {
-  label: string;
-  name: string;
-  flag: string;
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
-      <img
-        className="h-11 w-11 shrink-0 rounded-full border border-white/20 object-cover shadow-[0_0_18px_rgba(0,255,133,0.14)]"
-        src={`https://flagcdn.com/w80/${flag}.png`}
-        alt={name}
-      />
-      <div className="min-w-0">
-        <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-white/40">{label}</p>
-        <h2 className="mt-1 break-words font-heading text-2xl uppercase leading-[0.95] text-white">
-          {name}
-        </h2>
-      </div>
-    </div>
-  );
-}
-
-function Metric({ label, value, accent = "white" }: { label: string; value: string; accent?: "white" | "green" | "gold" }) {
-  const valueClass =
-    accent === "green" ? "text-[#00FF85]" : accent === "gold" ? "text-[#FFD700]" : "text-white";
-
-  return (
-    <div className="min-w-0 rounded-lg border border-white/10 bg-white/[0.035] p-3 text-center">
-      <p className="text-[0.66rem] font-black uppercase tracking-[0.16em] text-white/40">{label}</p>
-      <p className={`mt-1 break-words font-score text-base ${valueClass}`}>{value}</p>
-    </div>
-  );
-}
 
 function TicketCard({ ticket }: { ticket: TicketRecord }) {
   const { match, prediction } = ticket;
@@ -204,16 +163,16 @@ export default function MyTicketsPage() {
       void refetch();
     };
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === TICKET_REFRESH_KEY) {
+      if (event.key === "ninety-plus-ticket-refresh") {
         refresh();
       }
     };
 
-    window.addEventListener(TICKET_REFRESH_EVENT, refresh);
+    window.addEventListener("ninety-plus-ticket-refresh", refresh);
     window.addEventListener("storage", handleStorage);
 
     return () => {
-      window.removeEventListener(TICKET_REFRESH_EVENT, refresh);
+      window.removeEventListener("ninety-plus-ticket-refresh", refresh);
       window.removeEventListener("storage", handleStorage);
     };
   }, [isConnected, refetch]);
@@ -222,10 +181,10 @@ export default function MyTicketsPage() {
     return (
       data
         ?.map((result, index) => {
-          const prediction =
-            result.status === "success" ? (result.result as unknown as ContractPrediction) : undefined;
+          if (result.status !== "success") return null;
+          const prediction = result.result as unknown as ContractPrediction;
 
-          if (!prediction?.[0]) {
+          if (!prediction[0]) {
             return null;
           }
 

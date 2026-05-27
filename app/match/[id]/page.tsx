@@ -1,4 +1,22 @@
-"use client";
+'use client';
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { useQueryClient } from "@tanstack/react-query";
+
+import {
+  useAccount,
+  useChainId,
+  useReadContract,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
+
+import { zeroAddress } from "viem";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 import {
   ArrowLeft,
@@ -7,31 +25,15 @@ import {
   ExternalLink,
   Loader2,
   MapPin,
-  Minus,
-  Plus,
   Share2,
   ShieldCheck,
   Ticket,
 } from "lucide-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-  import { useParams } from "next/navigation";
-  import { useEffect, useMemo, useState } from "react";
-  import dynamic from "next/dynamic";
-import {
-  const ConfettiBurst = dynamic(() => import("@/components/ConfettiBurst"), { ssr: false });
-  useAccount,
-  useChainId,
-  useReadContract,
-  useSwitchChain,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
+
+const ConfettiBurst = dynamic(() => import("@/components/ConfettiBurst"), { ssr: false });
+
 import {
   type ContractPrediction,
-  type Fixture,
   type PickChoice,
   fixtures,
   NINETY_PLUS_ADDRESS,
@@ -53,34 +55,59 @@ const formatKickoff = (value: string) =>
     timeZoneName: "short",
   }).format(new Date(value));
 
-function TeamPanel({ label, name, flag, align = "left" }: { label: string; name: string; flag: string; align?: "left" | "right" }) {
+function TeamPanel({
+  label,
+  name,
+  flag,
+  align = "left",
+}: {
+  label: string;
+  name: string;
+  flag: string;
+  align?: "left" | "right";
+}) {
   return (
-    <div className={`flex min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4 ${align === "right" ? "sm:flex-row-reverse sm:text-right" : ""}`}>
-      <img className="h-14 w-14 shrink-0 rounded-full border border-white/20 object-cover shadow-[0_0_22px_rgba(0,255,133,0.16)]" src={`https://flagcdn.com/w80/${flag}.png`} alt={name} />
+    <div
+      className={`flex min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-4 ${
+        align === "right" ? "sm:flex-row-reverse sm:text-right" : ""
+      }`}
+    >
+      <img
+        className="h-14 w-14 shrink-0 rounded-full border border-white/20 object-cover shadow-[0_0_22px_rgba(0,255,133,0.16)]"
+        src={`https://flagcdn.com/w80/${flag}.png`}
+        alt={name}
+      />
       <div className="min-w-0">
         <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-white/50">{label}</p>
-        <h1 className="mt-1 break-words font-heading text-3xl uppercase leading-[0.95] text-white md:text-4xl">{name}</h1>
+        <h1 className="mt-1 break-words font-heading text-3xl uppercase leading-[0.95] text-white md:text-4xl">
+          {name}
+        </h1>
       </div>
     </div>
   );
 }
 
-
-
-function PickButton({ label, active, disabled, onClick }: { label: string; active: boolean; disabled: boolean; onClick: () => void; }) {
+function PickButton({
+  label,
+  active,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      setShowConfetti(true);
-      const t = setTimeout(() => setShowConfetti(false), 1500);
       className={`pick-button pick-button-call ${active ? "pick-button-active" : ""}`}
-      style={{ fontSize: '2.2rem', minHeight: 100 }}
+      style={{ fontSize: "2.2rem", minHeight: 100 }}
     >
       {label}
     </button>
-      return () => clearTimeout(t);
   );
 }
 
@@ -104,7 +131,13 @@ function DetailChip({
   );
 }
 
-function StatusPanel({ prediction, pick, explorerUrl, shareUrl, justConfirmed }: {
+function StatusPanel({
+  prediction,
+  pick,
+  explorerUrl,
+  shareUrl,
+  justConfirmed,
+}: {
   prediction: ContractPrediction | undefined;
   pick: PickChoice;
   explorerUrl: string | null;
@@ -127,37 +160,60 @@ function StatusPanel({ prediction, pick, explorerUrl, shareUrl, justConfirmed }:
             {prediction?.[0] ? `Token #${token}` : "Syncing Ticket"}
           </h3>
           <p className="mt-2 text-sm leading-6 text-white/70">
-            {pickLabels[pick]} call. {prediction?.[0] ? "This NFT ticket is now readable on-chain." : "The transaction confirmed; refreshing the on-chain ticket state."}
+            {pickLabels[pick]} call.{" "}
+            {prediction?.[0]
+              ? "This NFT ticket is now readable on-chain."
+              : "The transaction confirmed; refreshing the on-chain ticket state."}
           </p>
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
         {explorerUrl ? (
-          <a className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.055] px-3 text-sm font-black text-white transition hover:border-[#00FF85]/40" href={explorerUrl} target="_blank" rel="noreferrer">Explorer<ExternalLink size={15} /></a>
+          <a
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.055] px-3 text-sm font-black text-white transition hover:border-[#00FF85]/40"
+            href={explorerUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Explorer
+            <ExternalLink size={15} />
+          </a>
         ) : null}
         {shareUrl ? (
-          <a className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.055] px-3 text-sm font-black text-white transition hover:border-[#00FF85]/40" href={shareUrl} target="_blank" rel="noreferrer">Share<Share2 size={15} /></a>
+          <a
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.055] px-3 text-sm font-black text-white transition hover:border-[#00FF85]/40"
+            href={shareUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Share
+            <Share2 size={15} />
+          </a>
         ) : null}
-        <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#00FF85]/50 bg-[#00FF85] px-3 text-sm font-black text-[#04100B] shadow-[0_0_24px_rgba(0,255,133,0.22)]" href="/my-tickets">My Tickets<Ticket size={15} /></Link>
+        <Link
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#00FF85]/50 bg-[#00FF85] px-3 text-sm font-black text-[#04100B] shadow-[0_0_24px_rgba(0,255,133,0.22)]"
+          href="/my-tickets"
+        >
+          My Tickets
+          <Ticket size={15} />
+        </Link>
       </div>
     </div>
   );
 }
-      {showConfetti && (
-        <div className="fixed left-1/2 top-20 z-[10000] -translate-x-1/2 rounded-lg bg-[#04100B]/80 px-6 py-2 text-2xl font-black uppercase tracking-widest text-[#00FF85] shadow-lg backdrop-blur-md animate-fade-in-out">
-          Minted!
-        </div>
-      )}
 
 export default function MatchPage() {
   const params = useParams<{ id: string }>();
   const routeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const match = useMemo(() => fixtures.find((fixture) => String(fixture.id) === routeId), [routeId]);
   const queryClient = useQueryClient();
+
+  const [showConfetti, setShowConfetti] = useState(false);
   const [selectedPick, setSelectedPick] = useState<PickChoice>(0);
   const [submittedPick, setSubmittedPick] = useState<PickChoice | null>(null);
   const [hash, setHash] = useState<`0x${string}` | undefined>();
   const [localError, setLocalError] = useState<string | null>(null);
+
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { openConnectModal } = useConnectModal();
@@ -186,7 +242,7 @@ export default function MatchPage() {
 
   const prediction = predictionData as ContractPrediction | undefined;
   const alreadyMinted = Boolean(prediction?.[0]);
-  const currentPick = (prediction?.[1] ?? submittedPick ?? selectedPick) as PickChoice;
+  const currentPick = (alreadyMinted && prediction ? (prediction[1] as PickChoice) : (submittedPick ?? selectedPick)) as PickChoice;
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
@@ -194,9 +250,7 @@ export default function MatchPage() {
   });
 
   useEffect(() => {
-    if (!isConfirmed) {
-      return;
-    }
+    if (!isConfirmed) return;
 
     void refetch();
     void queryClient.invalidateQueries();
@@ -206,17 +260,12 @@ export default function MatchPage() {
   }, [isConfirmed, queryClient, refetch]);
 
   const explorerUrl = useMemo(() => {
-    if (!hash) {
-      return null;
-    }
-
+    if (!hash) return null;
     return `${xLayerTestnet.blockExplorers.default.url}/tx/${hash}`;
   }, [hash]);
 
   const shareUrl = useMemo(() => {
-    if (!match || typeof window === "undefined") {
-      return "";
-    }
+    if (!match || typeof window === "undefined") return "";
     const token = prediction?.[6] ? `Token #${prediction[6].toString()}` : "ticket";
     const text =
       `I minted my 90+ ${token} for ${match.home} vs ${match.away}. ` +
@@ -229,23 +278,27 @@ export default function MatchPage() {
     setLocalError(null);
     setSelectedPick(pick);
     setSubmittedPick(pick);
+
     if (!isConnected) {
       openConnectModal?.();
       return;
     }
+
     try {
       if (chainId !== xLayerTestnet.id) {
         await switchChainAsync({ chainId: xLayerTestnet.id });
       }
-      // Only pass pick, no scores
       const txHash = await writeContractAsync({
         address: NINETY_PLUS_ADDRESS,
         abi: ninetyPlusAbi,
         functionName: "submitPrediction",
-        args: [BigInt(match.id), pick],
+        args: [BigInt(match.id), pick, 0, 0],
         chainId: xLayerTestnet.id,
       });
       setHash(txHash);
+
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 1500);
     } catch (error) {
       setLocalError(error instanceof Error ? error.message : "Transaction failed");
     }
@@ -276,6 +329,15 @@ export default function MatchPage() {
 
   return (
     <main className="min-h-screen bg-[#080A0A] px-4 pb-24 sm:px-6">
+      {showConfetti && (
+        <>
+          <ConfettiBurst />
+          <div className="fixed left-1/2 top-20 z-[10000] -translate-x-1/2 rounded-lg bg-[#04100B]/80 px-6 py-2 text-2xl font-black uppercase tracking-widest text-[#00FF85] shadow-lg backdrop-blur-md animate-fade-in-out">
+            Minted!
+          </div>
+        </>
+      )}
+
       <section className="mx-auto w-full max-w-5xl pt-8 md:pt-12">
         <Link className="inline-flex items-center gap-2 text-sm font-black text-[#00FF85]" href="/matches">
           <ArrowLeft size={16} />
@@ -291,7 +353,6 @@ export default function MatchPage() {
               <h1 className="mt-4 break-words font-heading text-4xl uppercase leading-[0.92] text-white drop-shadow-[0_0_16px_rgba(0,255,133,0.34)] md:text-6xl">
                 {match.home} vs {match.away}
               </h1>
-              {/* Removed pulse/AI lean */}
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:w-[360px] lg:grid-cols-1">
               <DetailChip
@@ -315,7 +376,6 @@ export default function MatchPage() {
             <TeamPanel label="Away" name={match.away} flag={match.awayFlag} align="right" />
           </div>
 
-          {/* Odds can be shown or removed as needed, keeping for now */}
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {(["Home", "Draw", "Away"] as const).map((label, index) => (
               <div key={label} className="rounded-lg border border-white/10 bg-black/20 p-3">
@@ -340,7 +400,7 @@ export default function MatchPage() {
                 Lock Your Call
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
-                Pick the outcome, set a score, and mint a readable on-chain ticket for this fixture.
+                Pick the outcome and mint a readable on-chain ticket for this fixture.
               </p>
             </div>
             <Ticket className="shrink-0 text-[#FFD700]" size={30} />
@@ -379,8 +439,6 @@ export default function MatchPage() {
           <StatusPanel
             prediction={prediction}
             pick={currentPick}
-            homeScore={displayedHomeScore}
-            awayScore={displayedAwayScore}
             explorerUrl={explorerUrl}
             shareUrl={shareUrl}
             justConfirmed={isConfirmed && !alreadyMinted}

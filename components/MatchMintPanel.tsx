@@ -115,7 +115,7 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
 
   const prediction = predictionData as ContractPrediction | undefined;
   const alreadyMinted = Boolean(prediction?.[0]);
-  const mintedPick = (prediction?.[1] ?? submittedPick ?? selectedPick) as PickChoice;
+  const mintedPick = (alreadyMinted && prediction ? (prediction[1] as PickChoice) : (submittedPick ?? selectedPick)) as PickChoice;
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
@@ -181,7 +181,7 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
         address: NINETY_PLUS_ADDRESS,
         abi: ninetyPlusAbi,
         functionName: "submitPrediction",
-        args: [BigInt(match.id), pick, homeScore, awayScore],
+        args: [BigInt(match.id), pick, Number(homeScore), Number(awayScore)],
         chainId: xLayerTestnet.id,
       });
 
