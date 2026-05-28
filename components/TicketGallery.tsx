@@ -112,7 +112,7 @@ export function TicketGallery() {
           <article key={match.id} className={`ticket-card relative overflow-hidden p-5 ticket-pick-${pick.toLowerCase()}`}>
             <div className="relative z-10 flex items-start justify-between gap-4">
               <div>
-                <p className="eyebrow">Ticket #{prediction[6].toString()}</p>
+                <p className="eyebrow">Ticket #{prediction[4].toString()}</p>
                 <div className="mt-4 flex items-center gap-4">
                   <img className="country-flag country-flag-large" src={`https://flagcdn.com/w80/${match.homeFlag}.png`} alt={match.home} />
                   <div>
@@ -146,19 +146,13 @@ export function TicketGallery() {
                 <p className="text-pitch">{pick}</p>
               </div>
               <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                <p className="text-xs text-white/45">SCORE</p>
-                <p className="text-gold">
-                  {prediction[2]}-{prediction[3]}
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/5 p-3">
                 <p className="text-xs text-white/45">PTS</p>
-                <p>{prediction[5].toString()}</p>
+                <p>{prediction[3].toString()}</p>
               </div>
             </div>
 
             <div className="relative z-10 mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4 text-xs uppercase tracking-[0.22em] text-white/45">
-              <span>Token #{prediction[6].toString()}</span>
+              <span>Token #{prediction[4].toString()}</span>
               <span>{match.group}</span>
             </div>
           </article>

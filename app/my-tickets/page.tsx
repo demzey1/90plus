@@ -37,7 +37,7 @@ function TicketCard({ ticket }: { ticket: TicketRecord }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#888]">
-            Ticket #{prediction[6].toString()}
+            Ticket #{prediction[4].toString()}
           </p>
           <h2 className="mt-2 break-words font-heading text-2xl uppercase leading-none text-[#f5f5f5]">
             {match.home} vs {match.away}
@@ -254,7 +254,7 @@ export default function MyTicketsPage() {
         {isConnected && tickets.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {tickets.map((ticket) => (
-              <TicketCard key={`${ticket.match.id}-${ticket.prediction[6].toString()}`} ticket={ticket} />
+              <TicketCard key={`${ticket.match.id}-${ticket.prediction[4].toString()}`} ticket={ticket} />
             ))}
           </div>
         ) : null}

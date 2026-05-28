@@ -64,8 +64,6 @@ export const ninetyPlusAbi = [
     outputs: [
       { name: "submitted", type: "bool" },
       { name: "pick", type: "uint8" },
-      { name: "predictedHomeScore", type: "uint8" },
-      { name: "predictedAwayScore", type: "uint8" },
       { name: "submittedAt", type: "uint256" },
       { name: "points", type: "uint256" },
       { name: "tokenId", type: "uint256" },
@@ -227,8 +225,6 @@ export const pickLabels = ["HOME", "DRAW", "AWAY"] as const;
 
 export type ContractPrediction = readonly [
   boolean,
-  number,
-  number,
   number,
   bigint,
   bigint,
