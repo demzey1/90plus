@@ -1,37 +1,48 @@
 "use client";
-import { AdminPanel } from "@/components/AdminPanel";
+
 import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { AdminPanel } from "@/components/AdminPanel";
 
 const ADMIN_OWNER = "0x23E258ce31e96cf32249cD75B2127677ac23c47D";
 
 export default function AdminPage() {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const router = useRouter();
   const isOwner = address?.toLowerCase() === ADMIN_OWNER.toLowerCase();
-  if (!isOwner) {
-    return (
-      <main className="page-wrap pb-20">
-        <section className="section-head">
-          <div>
-            <span className="eyebrow">Access Denied</span>
-            <h1 className="section-title">Admin</h1>
-          </div>
-          <p className="section-copy">You do not have permission to view this page.</p>
-        </section>
-      </main>
-    );
-  }
+
+  useEffect(() => {
+    if (isConnected && !isOwner) {
+      router.replace("/");
+    }
+  }, [isConnected, isOwner, router]);
+
+  if (!isConnected || !isOwner) return null;
+
   return (
-    <main className="page-wrap pb-20">
-      <section className="section-head">
-        <div>
-          <span className="eyebrow">Control Room</span>
-          <h1 className="section-title">Admin</h1>
+    <main className="min-h-screen bg-[#0a0a0a] px-4 pb-24 text-[#f5f5f5] sm:px-6">
+      <section className="mx-auto max-w-4xl pt-12">
+        <div className="mb-8">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#00ff85]">
+            Control Room
+          </span>
+          <h1 className="mt-2 font-heading text-4xl uppercase text-[#f5f5f5] md:text-6xl">
+            Admin
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/45">
+            Create fixtures and declare final scores. The contract enforces owner-only writes on-chain regardless of this UI.
+          </p>
         </div>
-        <p className="section-copy">
-          Create fixtures and finalize scores from the tunnel. The contract still enforces owner-only writes.
-        </p>
+
+        <div className="mb-6 rounded-sm border border-[#FFD700]/20 bg-[#FFD700]/5 p-4 text-sm leading-6 text-white/70">
+          <strong className="font-black text-[#FFD700]">Before predictions work:</strong> Create all 8 matches
+          on-chain in order using the form below — Mexico first, England last. The contract assigns match IDs
+          sequentially from 1. They must match the fixture IDs in the frontend or every prediction will fail.
+        </div>
+
+        <AdminPanel />
       </section>
-      <AdminPanel />
     </main>
   );
 }

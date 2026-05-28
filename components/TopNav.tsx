@@ -1,21 +1,25 @@
 "use client";
 
-import { ArrowUpRight, Fuel, Lock, Shield, Ticket, Trophy } from "lucide-react";
+import { Fuel, Shield, Ticket, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAccount } from "wagmi";
 import { WalletButton } from "./WalletButton";
 
-const nav = [
-  { href: "/matches", label: "Matches", icon: Shield },
+const ADMIN_OWNER = "0x23E258ce31e96cf32249cD75B2127677ac23c47D";
+
+const publicNav = [
+  { href: "/matches",     label: "Matches",     icon: Shield },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/my-tickets", label: "Tickets", icon: Ticket },
-  { href: "/admin", label: "Admin", icon: Lock },
+  { href: "/my-tickets",  label: "Tickets",     icon: Ticket },
 ];
 
 const faucetUrl = "https://web3.okx.com/xlayer/faucet";
 
 export function TopNav() {
   const pathname = usePathname();
+  const { address } = useAccount();
+  const isOwner = address?.toLowerCase() === ADMIN_OWNER.toLowerCase();
 
   return (
     <header className="sticky top-0 z-[100] border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md">
@@ -25,7 +29,7 @@ export function TopNav() {
         </Link>
 
         <nav className="hidden items-center gap-8 text-[10px] font-black uppercase tracking-[0.3em] text-[#888] md:flex">
-          {nav.map(({ href, label, icon: Icon }) => (
+          {publicNav.map(({ href, label }) => (
             <Link
               key={href}
               className={`transition-colors hover:text-[#f5f5f5] ${pathname === href ? "text-[#00FF85]" : ""}`}
@@ -34,6 +38,14 @@ export function TopNav() {
               {label}
             </Link>
           ))}
+          {isOwner && (
+            <Link
+              className={`transition-colors hover:text-[#f5f5f5] ${pathname === "/admin" ? "text-[#00FF85]" : ""}`}
+              href="/admin"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-4">

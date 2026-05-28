@@ -160,7 +160,7 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
     return `https://x.com/intent/tweet?text=${encodeURIComponent(tweet)}&url=${encodeURIComponent(
       window.location.href,
     )}`;
-  }, [homeScore, match.away, match.home, mintedPick, prediction]);
+  }, [homeScore, awayScore, match.away, match.home, mintedPick, prediction]);
 
   async function handleSubmit(pick: PickChoice) {
     setLocalError(null);
@@ -187,7 +187,16 @@ export function MatchMintPanel({ match }: { match: Fixture }) {
 
       setHash(txHash);
     } catch (error) {
-      setLocalError(error instanceof Error ? error.message : "Transaction failed");
+      const msg = error instanceof Error ? error.message : "Transaction failed.";
+      setLocalError(
+        msg.includes("Invalid match")
+          ? "This match hasn't been created on-chain yet. The admin must create it first."
+          : msg.includes("Already predicted")
+            ? "You have already submitted a prediction for this match."
+            : msg.length > 140
+              ? msg.slice(0, 140) + "..."
+              : msg
+      );
     }
   }
 

@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarClock, MapPin, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarClock, MapPin } from "lucide-react";
 import Link from "next/link";
 import { fixtures, type Fixture } from "@/lib/contract";
 
@@ -23,7 +23,7 @@ function TeamRow({
   return (
     <div className="flex min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
       <img
-        className="h-10 w-10 shrink-0 rounded-full border border-white/20 object-cover shadow-[0_0_18px_rgba(0,255,133,0.14)]"
+        className="h-10 w-10 shrink-0 rounded-full border border-white/20 object-cover"
         src={`https://flagcdn.com/w80/${flag}.png`}
         alt={name}
       />
@@ -37,26 +37,16 @@ function TeamRow({
   );
 }
 
-function OddCell({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-black/25 px-2 py-2 text-center">
-      <p className="text-[0.66rem] font-black uppercase tracking-[0.16em] text-white/40">{label}</p>
-      <p className="mt-1 font-score text-sm text-white">{value}%</p>
-    </div>
-  );
-}
-
 function MatchTile({ match }: { match: Fixture }) {
   return (
     <Link
-      className="group flex min-h-[360px] flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0c1210]/90 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.34)] transition duration-200 hover:-translate-y-1 hover:border-[#00FF85]/50 hover:shadow-[0_0_34px_rgba(0,255,133,0.16)] sm:p-5"
+      className="group flex min-h-[360px] flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0c1210]/90 p-4 shadow-lg transition duration-200 hover:-translate-y-1 hover:border-white/20 sm:p-5"
       href={`/match/${match.id}`}
     >
       <div className="flex items-start justify-between gap-3">
         <span className="rounded-full border border-[#00FF85]/25 bg-[#00FF85]/10 px-3 py-1.5 text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#00FF85]">
           {match.group}
         </span>
-        <ShieldCheck className="shrink-0 text-[#00FF85]" size={20} />
       </div>
 
       <div className="mt-5 grid gap-3">
@@ -84,20 +74,8 @@ function MatchTile({ match }: { match: Fixture }) {
         </p>
       </div>
 
-      <div className="mt-5 rounded-lg border border-[#00FF85]/20 bg-[#00FF85]/[0.055] p-3">
-        <p className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#00FF85]">
-          <Sparkles size={13} />
-          AI Read
-        </p>
-        <p className="mt-2 text-sm leading-6 text-white/75">{match.aiLean}</p>
-      </div>
-
       <div className="mt-auto pt-5">
-        <div className="grid grid-cols-3 gap-2">
-          <OddCell label="Home" value={match.odds.home} />
-          <OddCell label="Draw" value={match.odds.draw} />
-          <OddCell label="Away" value={match.odds.away} />
-        </div>
+
         <div className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#00FF85]/30 bg-[#00FF85]/10 px-4 text-sm font-black text-[#00FF85] transition group-hover:bg-[#00FF85] group-hover:text-[#04100B]">
           Open Match
           <ArrowRight size={16} />
@@ -115,7 +93,7 @@ export default function MatchesPage() {
           <span className="text-xs font-black uppercase tracking-[0.24em] text-[#00FF85]">
             2026 World Cup Board
           </span>
-          <h1 className="mt-3 font-heading text-4xl uppercase leading-[0.92] text-white drop-shadow-[0_0_16px_rgba(0,255,133,0.36)] md:text-6xl">
+          <h1 className="mt-3 font-heading text-4xl uppercase leading-[0.92] text-white md:text-6xl">
             Pick Your Match
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70 md:text-base">

@@ -1,19 +1,14 @@
 "use client";
 
-import { ArrowRight, Lock, Loader2, PlusCircle, ShieldCheck, Trophy } from "lucide-react";
+import { Loader2, PlusCircle, ShieldCheck, Trophy } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
-import { zeroAddress } from "viem";
 import {
-  useAccount,
-  useReadContract,
   useSwitchChain,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
 import { NINETY_PLUS_ADDRESS, ninetyPlusAbi } from "@/lib/contract";
 import { xLayerTestnet } from "@/lib/wagmi";
-
-const ADMIN_OWNER = "0x23E258ce31e96cf32249cD75B2127677ac23c47D";
 
 const faucetUrl = "https://web3.okx.com/xlayer/faucet";
 
@@ -66,7 +61,6 @@ function AdminActionCard({
 }
 
 export function AdminPanel() {
-  const { address, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync, isPending } = useWriteContract();
 
@@ -86,22 +80,6 @@ export function AdminPanel() {
   const [hideMatchId, setHideMatchId] = useState("1");
   const [hideHash, setHideHash] = useState<`0x${string}` | undefined>();
   const [hideError, setHideError] = useState("");
-  const { data: ownerAddress } = useReadContract({
-    address: NINETY_PLUS_ADDRESS,
-    abi: ninetyPlusAbi,
-    functionName: "owner",
-    chainId: xLayerTestnet.id,
-  });
-
-  const unlockByOwner = useMemo(() => {
-    if (!address || !ownerAddress) {
-      return false;
-    }
-
-    return address.toLowerCase() === ADMIN_OWNER.toLowerCase();
-  }, [address, ownerAddress]);
-
-  const unlocked = unlockByOwner;
 
   const { isLoading: createConfirming, isSuccess: createConfirmed } = useWaitForTransactionReceipt({
     hash: createHash,
@@ -128,11 +106,6 @@ export function AdminPanel() {
 
   async function handleCreateMatch() {
     setCreateError("");
-
-    if (!unlocked) {
-      setCreateError("Unlock admin access with the owner wallet or password.");
-      return;
-    }
 
     try {
       if (!createHome.trim() || !createAway.trim() || !createAiPrediction.trim()) {
@@ -162,11 +135,6 @@ export function AdminPanel() {
 
   async function handleFinalizeMatch() {
     setFinalizeError("");
-
-    if (!unlocked) {
-      setFinalizeError("Unlock admin access with the owner wallet or password.");
-      return;
-    }
 
     try {
       const matchId = Number(finalizeMatchId);
@@ -200,11 +168,6 @@ export function AdminPanel() {
   async function handleHideMatch() {
     setHideError("");
 
-    if (!unlocked) {
-      setHideError("Unlock admin access with the owner wallet or password.");
-      return;
-    }
-
     try {
       const matchId = Number(hideMatchId);
 
@@ -229,20 +192,6 @@ export function AdminPanel() {
 
   const explorerUrl = (hash?: `0x${string}`) => (hash ? `${xLayerTestnet.blockExplorers.default.url}/tx/${hash}` : "");
 
-  if (!unlocked) {
-    return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-sm border border-red-500/20 bg-red-500/5 p-8 text-center">
-        <Lock className="mb-4 text-red-500" size={48} />
-        <h2 className="font-heading text-4xl uppercase text-white">Access Denied</h2>
-        <p className="mt-2 max-w-md text-white/60">
-          This panel is restricted to the contract owner. Please connect the authorized wallet.
-        </p>
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-white/20">Authorized Address</p>
-        <p className="mt-1 font-mono text-xs text-white/40">{ADMIN_OWNER}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="grid gap-5">
       <AdminActionCard
@@ -250,6 +199,11 @@ export function AdminPanel() {
         description="Add a future fixture to the contract."
         icon={PlusCircle}
       >
+        <div className="mb-4 rounded-sm border border-[#FFD700]/20 bg-[#FFD700]/5 p-3 text-xs leading-6 text-white/70">
+          <strong className="text-[#FFD700]">Required before predictions work:</strong> Create all 8 matches
+          in the exact order listed in the fixtures array (Mexico first, England last). The contract assigns
+          match IDs sequentially starting at 1 — they must match the frontend fixture IDs.
+        </div>
         <div className="admin-grid">
           <Field label="Home Team" value={createHome} onChange={setCreateHome} placeholder="Brazil" />
           <Field label="Away Team" value={createAway} onChange={setCreateAway} placeholder="Nigeria" />
