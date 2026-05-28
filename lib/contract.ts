@@ -41,8 +41,6 @@ export const ninetyPlusAbi = [
     inputs: [
       { name: "matchId", type: "uint256" },
       { name: "pick", type: "uint8" },
-      { name: "predictedHomeScore", type: "uint8" },
-      { name: "predictedAwayScore", type: "uint8" },
     ],
     outputs: [],
   },
