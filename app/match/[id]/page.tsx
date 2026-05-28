@@ -1,36 +1,22 @@
 'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-
-import {
-  useAccount,
-  useChainId,
-  useReadContract,
-  useSwitchChain,
-  useWriteContract,
-} from "wagmi";
-
-import { zeroAddress } from "viem";
-
 import {
   ArrowLeft,
   CalendarClock,
+  CheckCircle2,
+  Loader2,
   MapPin,
+  Ticket,
 } from "lucide-react";
-
-import { MatchMintPanel } from "@/components/MatchMintPanel";
-
 import {
-  type ContractPrediction,
-  type PickChoice,
-  fixtures,
-  NINETY_PLUS_ADDRESS,
-  ninetyPlusAbi,
-  pickLabels,
+  fixtures, NINETY_PLUS_ADDRESS, ninetyPlusAbi, pickLabels, type PickChoice, type ContractPrediction
 } from "@/lib/contract";
+import { useAccount, useChainId, useReadContract, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { xLayerTestnet } from "@/lib/wagmi";
+import { zeroAddress } from "viem";
 
 const formatKickoff = (value: string) =>
   new Intl.DateTimeFormat("en", {
@@ -99,6 +85,54 @@ export default function MatchPage() {
   const routeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const match = useMemo(() => fixtures.find((fixture) => String(fixture.id) === routeId), [routeId]);
 
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync, isPending } = useWriteContract();
+
+  const [hash, setHash] = useState<`0x${string}` | undefined>();
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  // Read existing prediction from on-chain
+  const { data: predictionData, refetch } = useReadContract({
+    address: NINETY_PLUS_ADDRESS,
+    abi: ninetyPlusAbi,
+    functionName: "predictions",
+    args: [BigInt(match?.id ?? 0), address ?? zeroAddress],
+    chainId: xLayerTestnet.id,
+    query: { enabled: !!address && !!match },
+  });
+
+  const prediction = predictionData as ContractPrediction | undefined;
+  const alreadyMinted = Boolean(prediction?.[0]);
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+    chainId: xLayerTestnet.id,
+  });
+
+  // Refresh the data once the transaction is confirmed
+  useEffect(() => {
+    if (isConfirmed) refetch();
+  }, [isConfirmed, refetch]);
+
+  async function handleMint(pick: number) {
+    if (!isConnected) return;
+    setLocalError(null);
+    try {
+      if (chainId !== xLayerTestnet.id) {
+        await switchChainAsync({ chainId: xLayerTestnet.id });
+      }
+      const txHash = await writeContractAsync({
+        address: NINETY_PLUS_ADDRESS,
+        abi: ninetyPlusAbi,
+        functionName: "submitPrediction",
+        args: [BigInt(match?.id ?? 0), pick],
+      });
+      setHash(txHash);
+    } catch (e: any) { setLocalError(e.message || "Transaction failed"); }
+  }
+
   if (!match) {
     return (
       <main className="min-h-screen bg-[#080A0A] px-4 pb-24 sm:px-6">
@@ -161,7 +195,48 @@ export default function MatchPage() {
           </div>
         </div>
 
-        <MatchMintPanel match={match} />
+        <section className="mt-5 rounded-lg border border-white/10 bg-[#111] p-6 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-[#00FF85]">NFT Prediction Ticket</p>
+              <h2 className="mt-1 font-heading text-3xl uppercase text-white">Lock Your Call</h2>
+            </div>
+            <Ticket className="text-[#FFD700]" size={32} />
+          </div>
+
+          <div className="mt-8 grid grid-cols-3 gap-4">
+            {pickLabels.map((label, i) => (
+              <button
+                key={label}
+                onClick={() => handleMint(i)}
+                disabled={isPending || isConfirming || alreadyMinted}
+                className={`h-28 rounded-2xl border-2 text-3xl font-bold transition-all hover:scale-105 ${
+                  alreadyMinted && prediction?.[1] === i
+                    ? "border-[#00FF85] bg-[#00FF85]/10 text-[#00FF85]"
+                    : "border-white/10 text-white/40 hover:border-white/40"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {alreadyMinted && (
+             <div className="mt-8 flex items-center justify-center gap-3 text-[#00FF85] text-2xl font-bold uppercase">
+               <CheckCircle2 size={28} />
+               Ticket Locked (#{prediction?.[4].toString()})
+             </div>
+          )}
+
+          {(isPending || isConfirming) && (
+            <div className="mt-6 flex items-center justify-center gap-3 text-white/70">
+              <Loader2 className="animate-spin" size={20} />
+              {isPending ? "Check your wallet..." : "Minting ticket on-chain..."}
+            </div>
+          )}
+
+          {localError && <div className="mt-4 text-center text-sm text-red-500">{localError}</div>}
+        </section>
       </section>
     </main>
   );
