@@ -31,6 +31,7 @@ const formatKickoff = (value: string) => {
 function TicketCard({ ticket }: { ticket: TicketRecord }) {
   const { match, prediction } = ticket;
   const pick = pickLabels[prediction[1] as PickChoice];
+  const points = prediction[3]; // Get points from prediction
   
   return (
     <article className="overflow-hidden rounded-sm border border-white/10 bg-[#0d0d0d] p-5">
@@ -74,7 +75,14 @@ function TicketCard({ ticket }: { ticket: TicketRecord }) {
           <p className="text-[0.66rem] font-black uppercase tracking-[0.18em] text-white/40">Group</p>
           <p className="mt-1 text-sm text-white/70">{match.group}</p>
         </div>
-        <Link className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#00FF85]/40 bg-[#00FF85]/10 px-4 text-sm font-black text-[#00FF85] transition hover:bg-[#00FF85] hover:text-[#04100B]" href={`/match/${match.id}`}>View Match</Link>
+        <div className="flex items-center gap-3"> {/* Added wrapper for points and button */}
+          {points > 0 && (
+            <span className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#FFD700]/40 bg-[#FFD700]/10 px-4 text-sm font-black text-[#FFD700]">
+              {points.toString()} PTS
+            </span>
+          )}
+          <Link className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#00FF85]/40 bg-[#00FF85]/10 px-4 text-sm font-black text-[#00FF85] transition hover:bg-[#00FF85] hover:text-[#04100B]" href={`/match/${match.id}`}>View Match</Link>
+        </div>
       </div>
     </article>
   );
