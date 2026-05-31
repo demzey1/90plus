@@ -230,3 +230,15 @@ export type ContractPrediction = readonly [
   bigint,
   bigint,
 ];
+
+export type ContractMatch = readonly [
+  string,
+  string,
+  bigint,
+  boolean,
+  boolean,
+  number,
+  number,
+  string,
+  boolean,
+];
