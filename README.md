@@ -14,8 +14,8 @@ Features
 - Fully on-chain
 
 Links
-- Live App: [your vercel url]
+- Live App:https://90plus-lemon.vercel.app/
 - Contract: `0x7cB475c494a44913dB55319a0BbB0C3583c8DBAd`
-- X Account: @90PlusX
+- X Account: @xninetyplus
 
 Built for X Cup Hackathon by demzey1
