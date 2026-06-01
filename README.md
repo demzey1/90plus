@@ -15,7 +15,7 @@ Features
 
 Links
 - Live App:https://90plus-lemon.vercel.app/
-- Contract: `0x7cB475c494a44913dB55319a0BbB0C3583c8DBAd`
+- Contract: 0x7cB475c494a44913dB55319a0BbB0C3583c8DBAd
 - X Account: @xninetyplus
 
 Built for X Cup Hackathon by demzey1
