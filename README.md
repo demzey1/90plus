@@ -15,7 +15,7 @@ Features
 
 Links
 - Live App: [your vercel url]
-- Contract: `0x90Fe3B19850E95258414Cb553403c515fd7b63EE`
+- Contract: `0x7cB475c494a44913dB55319a0BbB0C3583c8DBAd`
 - X Account: @90PlusX
 
 Built for X Cup Hackathon by demzey1

@@ -36,9 +36,9 @@ export default function AdminPage() {
         </div>
 
         <div className="mb-6 rounded-sm border border-[#FFD700]/20 bg-[#FFD700]/5 p-4 text-sm leading-6 text-white/70">
-          <strong className="font-black text-[#FFD700]">Before predictions work:</strong> Create all 8 matches
-          on-chain in order using the form below — Mexico first, England last. The contract assigns match IDs
-          sequentially from 1. They must match the fixture IDs in the frontend or every prediction will fail.
+          <strong className="font-black text-[#FFD700]">Current board:</strong> The public fixtures are mapped
+          to the deployed contract match IDs in the frontend. Use the controls below only for future fixtures
+          or final score updates.
         </div>
 
         <AdminPanel />

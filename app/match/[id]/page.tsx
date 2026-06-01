@@ -12,7 +12,12 @@ import {
   Ticket,
 } from "lucide-react";
 import {
-  fixtures, NINETY_PLUS_ADDRESS, ninetyPlusAbi, pickLabels, type PickChoice, type ContractPrediction
+  fixtures,
+  NINETY_PLUS_ADDRESS,
+  ninetyPlusAbi,
+  pickLabels,
+  type ContractMatch,
+  type ContractPrediction,
 } from "@/lib/contract";
 import { useAccount, useChainId, useReadContract, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { xLayerTestnet } from "@/lib/wagmi";
@@ -93,6 +98,19 @@ export default function MatchPage() {
   const [hash, setHash] = useState<`0x${string}` | undefined>();
   const [localError, setLocalError] = useState<string | null>(null);
 
+  const {
+    data: matchData,
+    isLoading: isLoadingOnchainMatch,
+    isError: isMatchReadError,
+  } = useReadContract({
+    address: NINETY_PLUS_ADDRESS,
+    abi: ninetyPlusAbi,
+    functionName: "matches",
+    args: [BigInt(match?.id ?? 0)],
+    chainId: xLayerTestnet.id,
+    query: { enabled: !!match },
+  });
+
   // Read existing prediction from on-chain
   const { data: predictionData, refetch } = useReadContract({
     address: NINETY_PLUS_ADDRESS,
@@ -104,6 +122,7 @@ export default function MatchPage() {
   });
 
   const prediction = predictionData as ContractPrediction | undefined;
+  const onchainMatch = matchData as ContractMatch | undefined;
   const alreadyMinted = Boolean(prediction?.[0]);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -111,13 +130,40 @@ export default function MatchPage() {
     chainId: xLayerTestnet.id,
   });
 
+  const matchExists = Boolean(onchainMatch?.[3]);
+  const matchFinalized = Boolean(onchainMatch?.[4]);
+  const matchHidden = Boolean(onchainMatch?.[8]);
+  const kickoffPassed =
+    typeof onchainMatch?.[2] === "bigint" &&
+    onchainMatch[2] > 0n &&
+    BigInt(Math.floor(Date.now() / 1000)) >= onchainMatch[2];
+
+  const mintUnavailableReason = isMatchReadError
+    ? "Unable to verify this match on-chain right now."
+    : !isLoadingOnchainMatch && !matchExists
+      ? "This match is not available on-chain."
+      : matchHidden
+        ? "This on-chain match is currently hidden, so predictions are disabled."
+        : matchFinalized
+          ? "This match has already been finalized."
+          : kickoffPassed
+            ? "Prediction window closed at kickoff."
+            : null;
+
+  const mintDisabled =
+    isPending ||
+    isConfirming ||
+    alreadyMinted ||
+    isLoadingOnchainMatch ||
+    Boolean(mintUnavailableReason);
+
   // Refresh the data once the transaction is confirmed
   useEffect(() => {
     if (isConfirmed) refetch();
   }, [isConfirmed, refetch]);
 
   async function handleMint(pick: number) {
-    if (!isConnected) return;
+    if (!isConnected || mintDisabled) return;
     setLocalError(null);
     try {
       if (chainId !== xLayerTestnet.id) {
@@ -209,7 +255,7 @@ export default function MatchPage() {
               <button
                 key={label}
                 onClick={() => handleMint(i)}
-                disabled={isPending || isConfirming || alreadyMinted}
+                disabled={mintDisabled}
                 className={`h-28 rounded-2xl border-2 text-3xl font-bold transition-all hover:scale-105 ${
                   alreadyMinted && prediction?.[1] === i
                     ? "border-[#00FF85] bg-[#00FF85]/10 text-[#00FF85]"
@@ -220,6 +266,12 @@ export default function MatchPage() {
               </button>
             ))}
           </div>
+
+          {mintUnavailableReason && !alreadyMinted ? (
+            <div className="mt-4 rounded-lg border border-[#FFD700]/25 bg-[#FFD700]/10 p-4 text-center text-sm font-bold text-[#FFD700]">
+              {mintUnavailableReason}
+            </div>
+          ) : null}
 
           {alreadyMinted && (
              <div className="mt-8 flex items-center justify-center gap-3 text-[#00FF85] text-2xl font-bold uppercase">

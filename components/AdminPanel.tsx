@@ -200,9 +200,8 @@ export function AdminPanel() {
         icon={PlusCircle}
       >
         <div className="mb-4 rounded-sm border border-[#FFD700]/20 bg-[#FFD700]/5 p-3 text-xs leading-6 text-white/70">
-          <strong className="text-[#FFD700]">Required before predictions work:</strong> Create all 8 matches
-          in the exact order listed in the fixtures array (Mexico first, England last). The contract assigns
-          match IDs sequentially starting at 1 — they must match the frontend fixture IDs.
+          <strong className="text-[#FFD700]">Current board:</strong> The public fixtures are mapped to the
+          deployed contract match IDs in the frontend. Use this form only when adding new on-chain fixtures.
         </div>
         <div className="admin-grid">
           <Field label="Home Team" value={createHome} onChange={setCreateHome} placeholder="Brazil" />

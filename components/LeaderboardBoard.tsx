@@ -3,7 +3,12 @@
 import { Crown, Medal } from "lucide-react";
 import { useMemo } from "react";
 import { useReadContracts } from "wagmi";
-import { leaderboardSeeds, NINETY_PLUS_ADDRESS, ninetyPlusAbi } from "@/lib/contract";
+import {
+  leaderboardSeeds,
+  NINETY_PLUS_ADDRESS,
+  ninetyPlusAbi,
+  type ContractUserStats,
+} from "@/lib/contract";
 import { xLayerTestnet } from "@/lib/wagmi";
 
 type LeaderboardRow = {
@@ -19,7 +24,7 @@ export function LeaderboardBoard() {
     contracts: leaderboardSeeds.map((fan) => ({
       address: NINETY_PLUS_ADDRESS,
       abi: ninetyPlusAbi,
-      functionName: "totalPoints",
+      functionName: "userStats",
       args: [fan.address],
       chainId: xLayerTestnet.id,
     })),
@@ -28,8 +33,11 @@ export function LeaderboardBoard() {
   const rows = useMemo<LeaderboardRow[]>(() => {
     return leaderboardSeeds
       .map((fan, index) => {
-        const total = data?.[index];
-        const points = total?.status === "success" ? (total.result as unknown as bigint) : 0n;
+        const stats = data?.[index];
+        const points =
+          stats?.status === "success"
+            ? (stats.result as unknown as ContractUserStats)[0]
+            : 0n;
 
         return {
           ...fan,

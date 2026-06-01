@@ -10,7 +10,9 @@
     "lint": "next lint",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
-    "deploy:xlayer": "hardhat run scripts/deploy.ts --network xlayerTestnet"
+    "deploy:xlayer": "hardhat run scripts/deploy.ts --network xlayerTestnet",
+    "deploy:ethers": "node scripts/deploy-contract.mjs",
+    "seed:fixtures": "node scripts/seed-fixtures.mjs"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.12",

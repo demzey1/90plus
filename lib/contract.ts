@@ -1,5 +1,5 @@
 export const NINETY_PLUS_ADDRESS =
-  "0x90Fe3B19850E95258414Cb553403c515fd7b63EE" as const;
+  "0x7cB475c494a44913dB55319a0BbB0C3583c8DBAd" as const;
 
 export type PickChoice = 0 | 1 | 2;
 
@@ -71,17 +71,14 @@ export const ninetyPlusAbi = [
   },
   {
     type: "function",
-    name: "totalPoints",
+    name: "userStats",
     stateMutability: "view",
     inputs: [{ name: "", type: "address" }],
-    outputs: [{ name: "", type: "uint256" }],
-  },
-  {
-    type: "function",
-    name: "predictionCount",
-    stateMutability: "view",
-    inputs: [{ name: "", type: "address" }],
-    outputs: [{ name: "", type: "uint256" }],
+    outputs: [
+      { name: "totalPoints", type: "uint256" },
+      { name: "predictionCount", type: "uint256" },
+      { name: "correctPredictions", type: "uint256" },
+    ],
   },
   {
     type: "function",
@@ -241,4 +238,10 @@ export type ContractMatch = readonly [
   number,
   string,
   boolean,
+];
+
+export type ContractUserStats = readonly [
+  bigint,
+  bigint,
+  bigint,
 ];
